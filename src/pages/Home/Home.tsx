@@ -34,8 +34,22 @@ export default function Home() {
   const [lowStock, setLowStock] = useState<number>(0);
   const [recentSales] = useState<string>('$0.00');
   const [activities] = useState<Activity[]>([]);
+  const [username, setUsername] = useState<string>('Administrador');
 
   useEffect(() => {
+    // Intentar leer el nombre del perfil desde localStorage
+    const saved = localStorage.getItem('user_profile');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as { firstName?: string };
+        if (parsed.firstName) {
+          setUsername(parsed.firstName);
+        }
+      } catch (e) {
+        console.error('Error al parsear el perfil del usuario para el saludo:', e);
+      }
+    }
+
     async function loadDashboardData() {
       try {
         // Intentar obtener productos reales del backend
@@ -66,18 +80,18 @@ export default function Home() {
 
   return (
     <div className="home-canvas">
-      {/* Encabezado de la Página */}
+      {/* Encabezado de la Página (US6) */}
       <div className="page-header">
-        <h2 className="display-lg">Vista General del Panel</h2>
+        <h2 className="display-lg">¡Hola {username}!</h2>
         <p className="body-lg text-secondary-color">Bienvenido de nuevo. Esto es lo que está pasando en tu catálogo hoy.</p>
       </div>
 
       {/* Cuadrícula de Estadísticas */}
       <div className="stats-grid">
-        {/* Tarjeta 1 */}
-        <div className="stat-card">
+        {/* Tarjeta 1 (Productos con acciones integradas) */}
+        <div className="stat-card action-stat-card">
           <div className="stat-card-header">
-            <span className="label-md text-secondary-color uppercase">Total de Productos</span>
+            <span className="label-md text-secondary-color uppercase">Productos</span>
             <span className="material-symbols-outlined stat-icon primary-icon">inventory_2</span>
           </div>
           <div className="stat-value">{totalProducts.toLocaleString()}</div>
@@ -86,17 +100,37 @@ export default function Home() {
             <span className="trend-percentage primary-text">+2.4%</span>
             <span className="trend-label text-secondary-color">desde el mes pasado</span>
           </div>
+          <div className="stat-actions">
+            <Link to="/products" className="md3-btn md3-btn-outlined btn-sm flex-1">
+              <span className="material-symbols-outlined icon-btn">list</span>
+              Ver Listado
+            </Link>
+            <Link to="/products/new" className="md3-btn md3-btn-filled btn-sm flex-1">
+              <span className="material-symbols-outlined icon-btn">add</span>
+              Agregar Producto
+            </Link>
+          </div>
         </div>
 
-        {/* Tarjeta 2 */}
-        <div className="stat-card">
+        {/* Tarjeta 2 (Categorías con acciones integradas) */}
+        <div className="stat-card action-stat-card">
           <div className="stat-card-header">
-            <span className="label-md text-secondary-color uppercase">Total de Categorías</span>
+            <span className="label-md text-secondary-color uppercase">Categorías</span>
             <span className="material-symbols-outlined stat-icon primary-icon">category</span>
           </div>
           <div className="stat-value">{totalCategories}</div>
           <div className="stat-trend">
             <span className="trend-label text-secondary-color">Activas en múltiples departamentos</span>
+          </div>
+          <div className="stat-actions">
+            <Link to="/categories" className="md3-btn md3-btn-outlined btn-sm flex-1">
+              <span className="material-symbols-outlined icon-btn">list</span>
+              Ver Listado
+            </Link>
+            <Link to="/categories/new" className="md3-btn md3-btn-filled btn-sm flex-1">
+              <span className="material-symbols-outlined icon-btn">add</span>
+              Agregar Categoría
+            </Link>
           </div>
         </div>
 
@@ -109,7 +143,7 @@ export default function Home() {
           <div className="stat-value">{lowStock}</div>
           <div className="stat-trend">
             <span className="material-symbols-outlined trend-arrow error-text">arrow_upward</span>
-            <span className="trend-percentage error-text">+12</span>
+            <span className="trend-percentage error-text">+{lowStock}</span>
             <span className="trend-label text-secondary-color">requieren reabastecimiento</span>
           </div>
         </div>
@@ -133,21 +167,6 @@ export default function Home() {
       <div className="home-split-layout">
         {/* Acciones Rápidas y Alertas */}
         <div className="left-column">
-          {/* Tarjeta de Acciones Rápidas */}
-          <div className="card shadow-sm">
-            <h3 className="headline-sm">Acciones Rápidas</h3>
-            <div className="quick-actions-buttons">
-              <Link to="/products/new" className="md3-btn md3-btn-filled w-full">
-                <span className="material-symbols-outlined icon-btn">add_circle</span>
-                Agregar Nuevo Producto
-              </Link>
-              <Link to="/categories/new" className="md3-btn md3-btn-outlined w-full">
-                <span className="material-symbols-outlined icon-btn">create_new_folder</span>
-                Agregar Nueva Categoría
-              </Link>
-            </div>
-          </div>
-
           {/* Gráfico Visual */}
           <div className="card shadow-sm flex-center min-h-200 bg-container-low">
             <div className="visual-placeholder text-center">
@@ -156,6 +175,7 @@ export default function Home() {
             </div>
           </div>
         </div>
+
 
         {/* Tabla de Actividad Reciente */}
         <div className="right-column card shadow-sm p-0">
