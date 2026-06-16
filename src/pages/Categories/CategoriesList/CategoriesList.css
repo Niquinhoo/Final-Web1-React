@@ -1,3 +1,89 @@
-.categories-list-container {
-  padding: 20px;
+.categories-canvas {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.categories-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  text-align: left;
+}
+
+.categories-header-section p {
+  margin-top: 4px;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+/* Category card - styled as MD3 Filled Card */
+.category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  padding: 32px 24px;
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-xl);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), 
+              box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1), 
+              border-color 0.2s;
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  border-color: var(--md-sys-color-outline);
+  background-color: var(--md-sys-color-surface-container);
+}
+
+.category-card-icon {
+  font-size: 32px;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-primary-container);
+  border-radius: var(--md-sys-shape-corner-full);
+  box-shadow: 0 2px 8px rgba(11, 87, 208, 0.15);
+  transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.category-card:hover .category-card-icon {
+  transform: scale(1.08) rotate(5deg);
+}
+
+.category-info h3 {
+  margin: 0 0 6px 0;
+  font-size: 18px;
+}
+
+.category-info p {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.category-actions {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.category-actions .btn-sm {
+  width: 100%;
+  box-sizing: border-box;
 }

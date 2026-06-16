@@ -1,3 +1,364 @@
-.home-container {
-  padding: 20px;
+/* Home canvas */
+.home-canvas {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-header {
+  text-align: left;
+}
+
+.page-header .display-lg {
+  margin: 0 0 6px 0;
+}
+
+.text-secondary-color {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Stats grid layout */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+/* Stat card style: Level 1 Container shape (MD3 Elevated Card style) */
+.stat-card {
+  background-color: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  border-color: var(--md-sys-color-outline);
+  transform: translateY(-2px);
+}
+
+/* Border highlighting for low stock alert */
+.stat-card.border-error {
+  border-left: 4px solid var(--md-sys-color-error);
+}
+
+.stat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--md-sys-shape-corner-full);
+}
+
+.primary-icon {
+  color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-primary-container);
+}
+
+.error-icon {
+  color: var(--md-sys-color-error);
+  background-color: var(--md-sys-color-error-container);
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 36px;
+  letter-spacing: -0.01em;
+  color: var(--md-sys-color-on-surface);
+}
+
+.stat-trend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.trend-arrow {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.trend-percentage {
+  font-weight: 600;
+}
+
+.primary-text {
+  color: var(--md-sys-color-primary);
+}
+
+.error-text {
+  color: var(--md-sys-color-error);
+}
+
+.success-text {
+  color: #137333; /* Google Green */
+}
+
+/* Home Split layout */
+.home-split-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .home-split-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Generic MD3 Card styling (Outlined Card spec) */
+.card {
+  background-color: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-lg);
+  padding: 24px;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.card.p-0 {
+  padding: 0;
+}
+
+.shadow-sm {
+  /* MD3 subtle container shadow */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Buttons grid */
+.quick-actions-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* MD3 Button styles */
+.md3-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px; /* MD3 button height */
+  padding: 0 24px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1), 
+              color 0.2s, 
+              border-color 0.2s,
+              box-shadow 0.2s,
+              transform 0.1s;
+}
+
+.md3-btn:active {
+  transform: scale(0.97);
+}
+
+.w-full {
+  width: 100%;
+}
+
+/* MD3 Filled Button Style */
+.md3-btn-filled {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  border: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.md3-btn-filled:hover {
+  background-color: #0b57d0e0; /* slight opacity or darker */
+  box-shadow: 0 2px 6px rgba(11, 87, 208, 0.2);
+}
+
+/* MD3 Outlined Button Style */
+.md3-btn-outlined {
+  background-color: transparent;
+  color: var(--md-sys-color-primary);
+  border: 1px solid var(--md-sys-color-outline);
+}
+
+.md3-btn-outlined:hover {
+  background-color: var(--md-sys-color-surface-container-low);
+  border-color: var(--md-sys-color-primary);
+}
+
+.icon-btn {
+  font-size: 20px;
+}
+
+/* Placeholder card elements */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.min-h-200 {
+  min-height: 200px;
+}
+
+.bg-container-low {
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px dashed var(--md-sys-color-outline-variant);
+}
+
+.visual-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.placeholder-icon {
+  font-size: 54px;
+  color: var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container);
+  padding: 16px;
+  border-radius: var(--md-sys-shape-corner-full);
+}
+
+/* Activity Table stylings */
+.table-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-header h3 {
+  margin: 0;
+}
+
+.text-btn {
+  background: none;
+  border: none;
+  color: var(--md-sys-color-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--md-sys-shape-corner-full);
+  padding: 6px 12px;
+  transition: background-color 0.2s;
+}
+
+.text-btn:hover {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.md3-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.md3-table th,
+.md3-table td {
+  padding: 18px 24px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  text-align: left;
+}
+
+.md3-table th {
+  background-color: var(--md-sys-color-surface-container-low);
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.md3-table tr:last-child td {
+  border-bottom: none;
+}
+
+.md3-table tr {
+  transition: background-color 0.15s ease;
+}
+
+.md3-table tr:hover td {
+  background-color: var(--md-sys-color-surface-container);
+}
+
+.action-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+.action-icon {
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--md-sys-color-surface-container-high);
+  border-radius: var(--md-sys-shape-corner-full);
+}
+
+.action-cell .success-text .action-icon {
+  color: #137333;
+}
+
+.text-on-surface {
+  color: var(--md-sys-color-on-surface);
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.line-through {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.text-right {
+  text-align: right !important;
 }

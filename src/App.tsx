@@ -1,122 +1,146 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from 'react';
+import { createBrowserRouter, RouterProvider, Outlet, NavLink, Navigate } from 'react-router-dom';
+import Home from './pages/Home/Home';
+import ProductsList from './pages/Products/ProductsList/ProductsList';
+import ProductView from './pages/Products/ProductView/ProductView';
+import CategoriesList from './pages/Categories/CategoriesList/CategoriesList';
+import CategoryView from './pages/Categories/CategoryView/CategoryView';
+import Profile from './pages/Profile/Profile';
+import NotFound from './pages/NotFound/NotFound';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+function Layout() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(prev => !prev);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="dashboard-layout">
+      {/* Mobile Drawer Overlay backdrop */}
+      <div 
+        className={`sidebar-overlay ${isSidebarOpen ? 'show' : ''}`} 
+        onClick={closeSidebar}
+        aria-hidden="true"
+      ></div>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {/* Sidebar Navigation Drawer */}
+      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+        <div className="sidebar-logo">
+          <h2>Mi Ecommerce</h2>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <nav className="sidebar-nav">
+          <NavLink 
+            to="/home" 
+            className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
+            onClick={closeSidebar}
+          >
+            <span className="material-symbols-outlined nav-icon">home</span>
+            <span className="nav-label">Inicio</span>
+          </NavLink>
+          <NavLink 
+            to="/products" 
+            className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
+            onClick={closeSidebar}
+          >
+            <span className="material-symbols-outlined nav-icon">inventory_2</span>
+            <span className="nav-label">Productos</span>
+          </NavLink>
+          <NavLink 
+            to="/categories" 
+            className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
+            onClick={closeSidebar}
+          >
+            <span className="material-symbols-outlined nav-icon">category</span>
+            <span className="nav-label">Categorías</span>
+          </NavLink>
+          <NavLink 
+            to="/profile" 
+            className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
+            onClick={closeSidebar}
+          >
+            <span className="material-symbols-outlined nav-icon">account_circle</span>
+            <span className="nav-label">Perfil</span>
+          </NavLink>
+        </nav>
+      </aside>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* Main Content Area */}
+      <div className="main-area">
+        <header className="header">
+          <button 
+            className="mobile-menu-toggle" 
+            onClick={toggleSidebar}
+            aria-label="Abrir navegación"
+          >
+            <span className="material-symbols-outlined">menu</span>
+          </button>
+          <h1 className="header-title">Panel de Control</h1>
+        </header>
+        <main className="content">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
 }
 
-export default App
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Layout />,
+    errorElement: <NotFound />,
+    children: [
+      {
+        path: '',
+        element: <Navigate to="/home" replace />,
+      },
+      {
+        path: 'home',
+        element: <Home />,
+      },
+      {
+        path: 'products',
+        element: <ProductsList />,
+      },
+      {
+        path: 'products/new',
+        element: <ProductView />,
+      },
+      {
+        path: 'products/:id',
+        element: <ProductView />,
+      },
+      {
+        path: 'categories',
+        element: <CategoriesList />,
+      },
+      {
+        path: 'categories/new',
+        element: <CategoryView />,
+      },
+      {
+        path: 'categories/:id',
+        element: <CategoryView />,
+      },
+      {
+        path: 'profile',
+        element: <Profile />,
+      },
+      {
+        path: '*',
+        element: <NotFound />,
+      },
+    ],
+  },
+]);
+
+export default function App() {
+  return <RouterProvider router={router} />;
+}
+

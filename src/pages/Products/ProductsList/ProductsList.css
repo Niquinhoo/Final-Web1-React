@@ -1,3 +1,273 @@
-.products-list-container {
-  padding: 20px;
+.products-canvas {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.products-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  text-align: left;
+}
+
+.products-header-section p {
+  margin-top: 4px;
+}
+
+.header-actions-group {
+  display: flex;
+  gap: 12px;
+}
+
+.products-summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.products-summary-card {
+  background-color: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-lg);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.products-summary-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  border-color: var(--md-sys-color-outline);
+  transform: translateY(-2px);
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-card-icon {
+  font-size: 22px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-surface-container-high);
+}
+
+.summary-card-icon.primary-text {
+  color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-primary-container);
+}
+
+.summary-card-icon.error-text {
+  color: var(--md-sys-color-error);
+  background-color: var(--md-sys-color-error-container);
+}
+
+.card-bottom {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.display-value {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 40px;
+  letter-spacing: -0.01em;
+  color: var(--md-sys-color-on-surface);
+}
+
+.trend-percentage-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.trend-percentage-value span {
+  font-size: 18px;
+}
+
+/* Table container (MD3 Card style) */
+.products-table-container {
+  background-color: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-lg);
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.product-name-link {
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.product-name-link:hover {
+  text-decoration: underline;
+  color: #0b57d0e0;
+}
+
+/* Badges styling matching MD3 Input/Filter Chips */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--md-sys-shape-corner-full);
+  font-size: 12px;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+.badge-success {
+  background-color: #e6f4ea; /* Soft light green */
+  color: #137333;
+  border: 1px solid #ceead6;
+}
+
+.badge-warning {
+  background-color: #fef7e0; /* Soft light yellow */
+  color: #b06000;
+  border: 1px solid #fde293;
+}
+
+.badge-danger {
+  background-color: #fce8e6; /* Soft light red */
+  color: #c5221f;
+  border: 1px solid #fad2cf;
+}
+
+.badge-neutral {
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* Actions cell edit/delete buttons (Circular Icon Buttons) */
+.table-row-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.action-icon-btn {
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  border-radius: var(--md-sys-shape-corner-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s, transform 0.1s;
+}
+
+.action-icon-btn:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-primary);
+}
+
+.action-icon-btn:active {
+  transform: scale(0.9);
+}
+
+.action-icon-btn.hover-danger:hover {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-error);
+}
+
+.action-icon-btn span {
+  font-size: 20px;
+}
+
+/* Pagination container */
+.table-pagination {
+  padding: 16px 24px;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.pagination-btn,
+.pagination-btn-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  min-width: 36px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  cursor: pointer;
+  color: var(--md-sys-color-on-surface-variant);
+  transition: background-color 0.2s, color 0.2s, transform 0.1s;
+}
+
+.pagination-btn:hover,
+.pagination-btn-arrow:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+}
+
+.pagination-btn:active,
+.pagination-btn-arrow:active {
+  transform: scale(0.92);
+}
+
+.pagination-btn.active {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-btn-arrow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pagination-btn-arrow:disabled:hover {
+  background-color: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.pagination-btn-arrow span {
+  font-size: 22px;
+}
+
+.pagination-ellipsis {
+  font-size: 13px;
+  color: var(--md-sys-color-on-surface-variant);
+  padding: 0 6px;
 }
