@@ -1,0 +1,58 @@
+.header {
+  height: 64px; /* Standard MD3 Small Top App Bar */
+  background-color: var(--md-sys-color-surface);
+  border-bottom: 1px solid var(--md-sys-color-surface-container-high);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  gap: 16px;
+  box-sizing: border-box;
+  text-align: left;
+  transition: background-color 0.3s;
+}
+
+/* Hamburger button for mobile menu toggling (MD3 Icon Button style) */
+.mobile-menu-toggle {
+  background: none;
+  border: none;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  border-radius: var(--md-sys-shape-corner-full);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--md-sys-color-on-surface);
+  position: relative;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.mobile-menu-toggle:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+}
+
+.mobile-menu-toggle:active {
+  transform: scale(0.92);
+}
+
+.mobile-menu-toggle span {
+  font-size: 24px;
+}
+
+.header-title {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+/* Responsive configurations (Tablets & Mobile) */
+@media (max-width: 1024px) {
+  .mobile-menu-toggle {
+    display: flex;
+  }
+}

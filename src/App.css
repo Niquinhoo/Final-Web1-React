@@ -24,110 +24,6 @@
   pointer-events: auto;
 }
 
-/* Sidebar Navigation Drawer (MD3 Style) */
-.sidebar {
-  width: var(--md-sys-spacing-sidebar-width);
-  min-width: var(--md-sys-spacing-sidebar-width);
-  background-color: var(--md-sys-color-surface-container-low);
-  border-right: 1px solid var(--md-sys-color-outline-variant);
-  display: flex;
-  flex-direction: column;
-  padding: 24px 16px;
-  box-sizing: border-box;
-  text-align: left;
-  z-index: 100;
-  transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1), background-color 0.3s;
-}
-
-.sidebar-logo {
-  margin-bottom: 32px;
-  padding-left: 16px;
-  display: flex;
-  align-items: center;
-}
-
-.sidebar-logo h2 {
-  font-size: 22px;
-  color: var(--md-sys-color-primary);
-  font-weight: 700;
-  margin: 0;
-  letter-spacing: -0.02em;
-}
-
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* MD3 Active-Pill Nav Items */
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  height: 56px; /* MD3 standard navigation item height */
-  padding: 0 24px;
-  text-decoration: none;
-  color: var(--md-sys-color-on-surface-variant);
-  border-radius: var(--md-sys-shape-corner-full);
-  font-size: 14px;
-  font-weight: 500;
-  position: relative;
-  box-sizing: border-box;
-  transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1), color 0.2s, transform 0.15s ease;
-  overflow: hidden;
-}
-
-/* Hover overlay effect */
-.nav-item::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-color: var(--md-sys-color-on-surface-variant);
-  opacity: 0;
-  border-radius: inherit;
-  transition: opacity 0.15s linear;
-}
-
-.nav-item:hover::before {
-  opacity: 0.08;
-}
-
-.nav-item:active {
-  transform: scale(0.97);
-}
-
-/* Active navigation item uses a prominent MD3 capsule shape */
-.nav-item.active {
-  background-color: var(--md-sys-color-secondary-container);
-  color: var(--md-sys-color-on-secondary-container);
-  font-weight: 600;
-}
-
-.nav-item.active::before {
-  background-color: var(--md-sys-color-on-secondary-container);
-}
-
-.nav-item.active:hover::before {
-  opacity: 0.04;
-}
-
-.nav-icon {
-  font-size: 24px;
-  z-index: 1;
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  transition: font-variation-settings 0.2s ease;
-}
-
-.nav-item.active .nav-icon {
-  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
-}
-
-.nav-label {
-  line-height: 1;
-  z-index: 1;
-}
-
 /* Main Area right container */
 .main-area {
   flex-grow: 1;
@@ -139,58 +35,6 @@
   background-color: var(--md-sys-color-background);
 }
 
-.header {
-  height: 64px; /* Standard MD3 Small Top App Bar */
-  background-color: var(--md-sys-color-surface);
-  border-bottom: 1px solid var(--md-sys-color-surface-container-high);
-  display: flex;
-  align-items: center;
-  padding: 0 24px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  gap: 16px;
-  box-sizing: border-box;
-  text-align: left;
-  transition: background-color 0.3s;
-}
-
-/* Hamburger button for mobile menu toggling (MD3 Icon Button style) */
-.mobile-menu-toggle {
-  background: none;
-  border: none;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  border-radius: var(--md-sys-shape-corner-full);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  color: var(--md-sys-color-on-surface);
-  position: relative;
-  transition: background-color 0.2s, transform 0.1s;
-}
-
-.mobile-menu-toggle:hover {
-  background-color: var(--md-sys-color-surface-container-high);
-}
-
-.mobile-menu-toggle:active {
-  transform: scale(0.92);
-}
-
-.mobile-menu-toggle span {
-  font-size: 24px;
-}
-
-.header-title {
-  font-size: 20px;
-  font-weight: 500;
-  color: var(--md-sys-color-on-surface);
-  margin: 0;
-  letter-spacing: -0.01em;
-}
-
 .content {
   padding: var(--md-sys-spacing-margin);
   flex-grow: 1;
@@ -199,33 +43,9 @@
   background-color: var(--md-sys-color-background);
 }
 
-/* Responsive configurations (Tablets & Mobile) */
-@media (max-width: 1024px) {
-  .mobile-menu-toggle {
-    display: flex;
-  }
-
-  /* Sidebar slides out as a floating drawer in mobile */
-  .sidebar {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    transform: translateX(-100%);
-    box-shadow: none;
-    border-right: none;
-    border-top-right-radius: 16px;
-    border-bottom-right-radius: 16px;
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
-  }
-}
-
 @media (max-width: 480px) {
   .content {
     padding: 16px;
   }
 }
+
