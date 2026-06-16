@@ -271,3 +271,130 @@
   color: var(--md-sys-color-on-surface-variant);
   padding: 0 6px;
 }
+
+/* Product thumbnail image styling (US7) */
+.product-thumb-container {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  overflow: hidden;
+  background-color: var(--md-sys-color-surface-container);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.product-thumb-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-loading-placeholder,
+.image-error-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.image-loading-placeholder span {
+  font-size: 20px;
+  animation: rotate 1.5s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Search bar styling (US8) */
+.search-container {
+  display: flex;
+  align-items: center;
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-full);
+  padding: 0 16px;
+  height: 48px;
+  box-sizing: border-box;
+  transition: width 0.3s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s, box-shadow 0.2s;
+  width: 260px;
+}
+
+.search-container:focus-within {
+  border-color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-surface-container-lowest);
+  box-shadow: 0 0 0 2px var(--md-sys-color-primary-container);
+}
+
+.search-icon {
+  font-size: 20px;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-right: 8px;
+}
+
+.search-input {
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface);
+  width: 100%;
+  padding: 0;
+}
+
+/* Responsive configurations (Tablets & Mobile - US7 & US8 Bonus) */
+@media (max-width: 768px) {
+  .products-header-section {
+    position: relative;
+    min-height: 48px;
+  }
+
+  /* El buscador expandido ocupa todo el encabezado ocultando el resto */
+  .search-container.expanded {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 100% !important;
+    z-index: 5;
+    background-color: var(--md-sys-color-surface-container-lowest);
+    border-radius: var(--md-sys-shape-corner-lg);
+  }
+
+  .products-header-section.search-active > div:first-child,
+  .products-header-section.search-active .header-actions-group > Link {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .products-header-section.search-active .header-actions-group {
+    width: 100%;
+  }
+
+  .products-header-section.search-active .search-container.expanded {
+    flex-grow: 1;
+  }
+
+  /* Ocultar texto del botón agregar en mobile y hacerlo circular */
+  .header-actions-group .md3-btn .btn-text {
+    display: none;
+  }
+
+  .header-actions-group .md3-btn {
+    padding: 0;
+    width: 48px;
+    min-width: 48px;
+    border-radius: var(--md-sys-shape-corner-full);
+    justify-content: center;
+  }
+}
+

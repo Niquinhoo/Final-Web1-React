@@ -10,12 +10,45 @@ interface Product {
   price: number;
   stock: number;
   status: string;
+  src?: string;
+}
+
+// Subcomponente local para controlar el estado de precarga e iconos fallback de la imagen (US7)
+function ProductRowImage({ src, alt }: { src?: string; alt: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+
+  return (
+    <div className="product-thumb-container">
+      {!loaded && !error && (
+        <div className="image-loading-placeholder">
+          <span className="material-symbols-outlined spinner-icon">hourglass_empty</span>
+        </div>
+      )}
+      {error || !src ? (
+        <div className="image-error-placeholder">
+          <span className="material-symbols-outlined">image</span>
+        </div>
+      ) : (
+        <img 
+          src={src} 
+          alt={alt} 
+          onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
+          style={{ display: loaded ? 'block' : 'none' }}
+          className="product-thumb-image"
+        />
+      )}
+    </div>
+  );
 }
 
 export default function ProductsList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [totalCategories, setTotalCategories] = useState<number>(0);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -98,32 +131,50 @@ export default function ProductsList() {
       // Actualizar estado local
       setProducts(prev => prev.filter(p => p.id !== id));
     } catch (error) {
-      console.error('Error al eliminar producto del backend. Eliminando del estado local para demostración.', error);
+      console.error('Error al eliminar producto del backend. Eliminando del estado local para deomstración.', error);
       // Eliminar del estado local como fallback para que la interfaz responda al usuario
       setProducts(prev => prev.filter(p => p.id !== id));
     }
   };
 
-  // Cálculos estadísticos rápidos
+  // Filtrado dinámico por nombre, id o categoría (US8)
+  const filteredProducts = products.filter(product => {
+    const term = searchTerm.toLowerCase();
+    return (
+      product.title.toLowerCase().includes(term) ||
+      product.category.toLowerCase().includes(term) ||
+      product.id.toString().includes(term)
+    );
+  });
+
+  // Cálculos estadísticos rápidos basados en el listado completo
   const totalProducts = products.length;
   const lowStockCount = products.filter(p => p.stock <= 12).length;
 
   return (
     <div className="products-canvas">
-      {/* Encabezado de Página y Acciones */}
-      <div className="products-header-section">
+      {/* Encabezado de Página y Acciones (US7 & US8) */}
+      <div className={`products-header-section ${isSearchFocused ? 'search-active' : ''}`}>
         <div>
-          <h2 className="headline-md">Administración de Productos</h2>
+          <h2 className="headline-md">Productos</h2>
           <p className="body-sm text-secondary-color mt-1">Gestiona los artículos de tu catálogo, precios y niveles de stock.</p>
         </div>
         <div className="header-actions-group">
-          <button className="md3-btn md3-btn-outlined">
-            <span className="material-symbols-outlined icon-btn">filter_list</span>
-            Filtrar
-          </button>
+          <div className={`search-container ${isSearchFocused ? 'expanded' : ''}`}>
+            <span className="material-symbols-outlined search-icon">search</span>
+            <input 
+              type="text" 
+              placeholder="Buscar productos..." 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
+              className="search-input"
+            />
+          </div>
           <Link to="/products/new" className="md3-btn md3-btn-filled">
             <span className="material-symbols-outlined icon-btn">add</span>
-            Nuevo Producto
+            <span className="btn-text">Agregar Producto</span>
           </Link>
         </div>
       </div>
@@ -179,6 +230,7 @@ export default function ProductsList() {
           <table className="md3-table">
             <thead>
               <tr>
+                <th>Imagen</th>
                 <th>ID</th>
                 <th>Nombre</th>
                 <th>Categoría</th>
@@ -191,19 +243,22 @@ export default function ProductsList() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="text-center text-secondary-color" style={{ padding: '32px' }}>
+                  <td colSpan={8} className="text-center text-secondary-color" style={{ padding: '32px' }}>
                     Cargando productos...
                   </td>
                 </tr>
-              ) : products.length === 0 ? (
+              ) : filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center text-secondary-color" style={{ padding: '32px' }}>
-                    No se encontraron productos en el catálogo.
+                  <td colSpan={8} className="text-center text-secondary-color" style={{ padding: '32px' }}>
+                    {searchTerm ? 'No se encontraron productos coincidentes.' : 'No se encontraron productos en el catálogo.'}
                   </td>
                 </tr>
               ) : (
-                products.map(product => (
+                filteredProducts.map(product => (
                   <tr key={product.id}>
+                    <td>
+                      <ProductRowImage src={product.src} alt={product.title} />
+                    </td>
                     <td className="text-secondary-color">#{product.id}</td>
                     <td>
                       <Link to={`/products/${product.id}`} className="product-name-link font-semibold">
@@ -245,8 +300,8 @@ export default function ProductsList() {
         <div className="table-pagination">
           <p className="body-sm text-secondary-color">
             Mostrando <span className="font-semibold text-on-surface">1</span> a{' '}
-            <span className="font-semibold text-on-surface">{products.length}</span> de{' '}
-            <span className="font-semibold text-on-surface">{products.length}</span> resultados
+            <span className="font-semibold text-on-surface">{filteredProducts.length}</span> de{' '}
+            <span className="font-semibold text-on-surface">{filteredProducts.length}</span> resultados
           </p>
           <div className="pagination-controls">
             <button className="pagination-btn-arrow" disabled>
