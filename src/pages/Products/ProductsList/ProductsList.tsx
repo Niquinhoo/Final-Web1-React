@@ -125,7 +125,7 @@ export default function ProductsList() {
 
     try {
       // Intentar eliminación física en el backend
-      await apiFetch(`/products/${id}`, {
+      await apiFetch(`/products/${id}/delete`, {
         method: 'DELETE',
       });
       // Actualizar estado local
@@ -136,6 +136,7 @@ export default function ProductsList() {
       setProducts(prev => prev.filter(p => p.id !== id));
     }
   };
+
 
   // Filtrado dinámico por nombre, id o categoría (US8)
   const filteredProducts = products.filter(product => {

@@ -235,3 +235,28 @@
   border-top: 1px solid var(--md-sys-color-outline-variant);
   padding-top: 24px;
 }
+
+/* Image input controls (US9) */
+.input-with-button {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-clear-image {
+  height: 48px;
+  padding: 0 16px;
+  white-space: nowrap;
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-error);
+  color: var(--md-sys-color-error);
+  transition: all 0.2s;
+}
+
+.btn-clear-image:hover {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border-color: var(--md-sys-color-error);
+}
+

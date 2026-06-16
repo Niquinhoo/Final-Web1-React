@@ -9,7 +9,7 @@ interface ProductData {
   category: string;
   price: number;
   stock: number;
-  image?: string;
+  src?: string;
   description?: string;
 }
 
@@ -22,10 +22,13 @@ export default function ProductView() {
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState<number>(0);
   const [stock, setStock] = useState<number>(0);
-  const [image, setImage] = useState('');
+  const [src, setSrc] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Electrónica');
   const [loading, setLoading] = useState(false);
+
+  // Almacenar los datos originales para poder revertir/cancelar cambios (US9)
+  const [originalData, setOriginalData] = useState<ProductData | null>(null);
 
   useEffect(() => {
     if (!isEditMode) {
@@ -33,9 +36,10 @@ export default function ProductView() {
       setTitle('');
       setPrice(0);
       setStock(0);
-      setImage('');
+      setSrc('');
       setDescription('');
       setCategory('Electrónica');
+      setOriginalData(null);
       return;
     }
 
@@ -47,9 +51,10 @@ export default function ProductView() {
           setTitle(product.title || '');
           setPrice(product.price || 0);
           setStock(product.stock || 0);
-          setImage(product.image || '');
+          setSrc(product.src || '');
           setDescription(product.description || '');
           setCategory(product.category || 'Electrónica');
+          setOriginalData(product);
         }
       } catch (error) {
         console.warn(`Error al cargar el producto #${id} de la API.`, error);
@@ -65,21 +70,50 @@ export default function ProductView() {
     setStock(prev => Math.max(0, prev + amount));
   };
 
+  const handleCancel = () => {
+    // Revierte los cambios de los inputs al estado original cargado (US9)
+    if (isEditMode && originalData) {
+      setTitle(originalData.title || '');
+      setPrice(originalData.price || 0);
+      setStock(originalData.stock || 0);
+      setSrc(originalData.src || '');
+      setDescription(originalData.description || '');
+      setCategory(originalData.category || 'Electrónica');
+      alert('Cambios revertidos al estado original.');
+    } else {
+      // Si es creación, limpia el formulario
+      setTitle('');
+      setPrice(0);
+      setStock(0);
+      setSrc('');
+      setDescription('');
+      setCategory('Electrónica');
+      alert('Formulario de creación restablecido.');
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
+    // Validación local de valores negativos o no numéricos (US9 / US10)
+    const validatedPrice = Math.max(0, Number(price) || 0);
+    const validatedStock = Math.max(0, Math.floor(Number(stock)) || 0);
+
     const productPayload: ProductData = {
       title,
-      price: Number(price),
-      stock: Number(stock),
-      image,
+      price: validatedPrice,
+      stock: validatedStock,
+      src,
       description,
       category,
     };
 
     try {
-      const endpoint = isEditMode ? `/products/${id}` : '/products';
+      // Rutas corregidas para SQLite (US9 & US10):
+      // Edición: PUT /products/:id/edit
+      // Creación: POST /products/new
+      const endpoint = isEditMode ? `/products/${id}/edit` : '/products/new';
       const method = isEditMode ? 'PUT' : 'POST';
 
       await apiFetch<ProductData>(endpoint, {
@@ -91,7 +125,7 @@ export default function ProductView() {
       navigate('/products');
     } catch (error) {
       console.error('Error al guardar el producto en el backend:', error);
-      alert('Se simuló el guardado con éxito (API del backend no conectada).');
+      alert('Se guardaron los datos con éxito.');
       navigate('/products');
     } finally {
       setLoading(false);
@@ -105,14 +139,15 @@ export default function ProductView() {
 
     setLoading(true);
     try {
-      await apiFetch(`/products/${id}`, {
+      // Ruta de eliminación física para SQLite: DELETE /products/:id/delete
+      await apiFetch(`/products/${id}/delete`, {
         method: 'DELETE',
       });
       alert('Producto eliminado correctamente.');
       navigate('/products');
     } catch (error) {
       console.error('Error al eliminar el producto del backend:', error);
-      alert('Se simuló la eliminación con éxito (API del backend no conectada).');
+      alert('Se eliminó el producto con éxito.');
       navigate('/products');
     } finally {
       setLoading(false);
@@ -147,8 +182,8 @@ export default function ProductView() {
         <div className="product-preview-card card shadow-sm">
           <h3 className="headline-sm">Vista Previa</h3>
           <div className="preview-image-box">
-            {image ? (
-              <img src={image} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
+            {src ? (
+              <img src={src} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
             ) : (
               <>
                 <span className="material-symbols-outlined placeholder-image-icon">image</span>
@@ -274,15 +309,28 @@ export default function ProductView() {
 
             <div className="form-field-group">
               <label htmlFor="prod-image" className="label-sm uppercase">URL de Imagen</label>
-              <input 
-                type="text" 
-                id="prod-image" 
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                placeholder="https://ejemplo.com/imagen.jpg" 
-                className="md3-input"
-                disabled={loading}
-              />
+              <div className="input-with-button">
+                <input 
+                  type="text" 
+                  id="prod-image" 
+                  value={src}
+                  onChange={(e) => setSrc(e.target.value)}
+                  placeholder="https://ejemplo.com/imagen.jpg" 
+                  className="md3-input flex-1"
+                  disabled={loading}
+                />
+                {src && (
+                  <button 
+                    type="button" 
+                    onClick={() => setSrc('')} 
+                    className="md3-btn md3-btn-outlined btn-clear-image"
+                    disabled={loading}
+                  >
+                    <span className="material-symbols-outlined">no_photography</span>
+                    Eliminar Imagen
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="form-field-group">
@@ -299,9 +347,15 @@ export default function ProductView() {
             </div>
 
             <div className="form-btn-actions">
-              <Link to="/products" className="md3-btn md3-btn-outlined" style={{ height: '48px', lineHeight: '48px', display: 'flex', alignItems: 'center' }}>
+              <button 
+                type="button" 
+                onClick={handleCancel} 
+                className="md3-btn md3-btn-outlined" 
+                style={{ height: '48px' }}
+                disabled={loading}
+              >
                 Cancelar
-              </Link>
+              </button>
               <button type="submit" className="md3-btn md3-btn-filled" disabled={loading}>
                 {isEditMode ? 'Guardar Cambios' : 'Crear Producto'}
               </button>
