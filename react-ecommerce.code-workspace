@@ -1,0 +1,13 @@
+{
+  "folders": [
+    {
+      "name": "React Dashboard",
+      "path": "."
+    },
+    {
+      "name": "Express Backend",
+      "path": "../Web-1"
+    }
+  ],
+  "settings": {}
+}

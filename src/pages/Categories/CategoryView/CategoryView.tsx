@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../../utils/api';
+import { Button, Card } from '../../../components/atoms';
+import { useDialog, useSnackbar } from '../../../components/molecules';
 import './CategoryView.css';
 
 interface CategoryData {
@@ -14,16 +16,15 @@ export default function CategoryView() {
   const navigate = useNavigate();
   const isEditMode = id !== undefined;
 
+  const dialog = useDialog();
+  const snackbar = useSnackbar();
+
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('folder');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isEditMode) {
-      setName('');
-      setIcon('folder');
-      return;
-    }
+    if (!isEditMode) return;
 
     async function loadCategory() {
       try {
@@ -61,11 +62,11 @@ export default function CategoryView() {
         body: JSON.stringify(categoryPayload),
       });
 
-      alert(isEditMode ? 'Categoría actualizada correctamente.' : 'Categoría creada correctamente.');
+      snackbar.show(isEditMode ? 'Categoría actualizada correctamente.' : 'Categoría creada correctamente.');
       navigate('/categories');
     } catch (error) {
       console.error('Error al guardar la categoría en el backend:', error);
-      alert('Se simuló el guardado con éxito (API del backend no conectada).');
+      snackbar.show('Se simuló el guardado con éxito (API del backend no conectada).');
       navigate('/categories');
     } finally {
       setLoading(false);
@@ -73,20 +74,26 @@ export default function CategoryView() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta categoría?')) {
-      return;
-    }
+    const confirmed = await dialog.confirm({
+      title: 'Eliminar categoría',
+      message: '¿Estás seguro de que deseas eliminar esta categoría?',
+      confirmLabel: 'Eliminar',
+      cancelLabel: 'Cancelar',
+      danger: true,
+    });
+
+    if (!confirmed) return;
 
     setLoading(true);
     try {
       await apiFetch(`/categories/${id}`, {
         method: 'DELETE',
       });
-      alert('Categoría eliminada correctamente.');
+      snackbar.show('Categoría eliminada correctamente.');
       navigate('/categories');
     } catch (error) {
       console.error('Error al eliminar la categoría del backend:', error);
-      alert('Se simuló la eliminación con éxito (API del backend no conectada).');
+      snackbar.show('Se simuló la eliminación con éxito (API del backend no conectada).');
       navigate('/categories');
     } finally {
       setLoading(false);
@@ -95,7 +102,6 @@ export default function CategoryView() {
 
   return (
     <div className="category-view-canvas">
-      {/* Encabezado de Página */}
       <div className="category-view-header-section">
         <div className="breadcrumbs font-body-sm text-secondary-color">
           <Link to="/categories" className="breadcrumb-link">Categorías</Link>
@@ -103,28 +109,22 @@ export default function CategoryView() {
           <span className="breadcrumb-current">{isEditMode ? `Detalle #${id}` : 'Nueva Categoría'}</span>
         </div>
         {isEditMode && (
-          <button 
-            type="button"
-            onClick={handleDelete}
-            className="md3-btn md3-btn-danger"
-            disabled={loading}
-          >
-            <span className="material-symbols-outlined icon-btn">delete</span>
+          <Button variant="danger" icon="delete" onClick={handleDelete} disabled={loading}>
             Eliminar
-          </button>
+          </Button>
         )}
       </div>
 
       <div className="category-view-body">
-        <div className="category-form-card card shadow-sm">
+        <Card className="category-form-card">
           <h3 className="headline-sm">{isEditMode ? 'Editar Categoría' : 'Agregar Nueva Categoría'}</h3>
           <form onSubmit={handleSave} className="md3-form">
             <div className="form-field-group">
               <label htmlFor="cat-name" className="label-sm uppercase">Nombre de la Categoría *</label>
-              <input 
-                type="text" 
-                id="cat-name" 
-                required 
+              <input
+                type="text"
+                id="cat-name"
+                required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Nombre de la categoría"
@@ -135,9 +135,9 @@ export default function CategoryView() {
 
             <div className="form-field-group">
               <label htmlFor="cat-icon" className="label-sm uppercase">Icono (Nombre del icono en Material Symbols)</label>
-              <input 
-                type="text" 
-                id="cat-icon" 
+              <input
+                type="text"
+                id="cat-icon"
                 value={icon}
                 onChange={(e) => setIcon(e.target.value)}
                 placeholder="Ej: devices, home, apparel, laundry"
@@ -155,7 +155,7 @@ export default function CategoryView() {
               </button>
             </div>
           </form>
-        </div>
+        </Card>
       </div>
     </div>
   );

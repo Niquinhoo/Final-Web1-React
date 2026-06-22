@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiFetch } from '../../../utils/api';
+import { Chip, CircularProgress } from '../../../components/atoms';
+import { useDialog, useSnackbar } from '../../../components/molecules';
 import './ProductsList.css';
 
 interface Product {
@@ -11,6 +13,11 @@ interface Product {
   stock: number;
   status: string;
   src?: string;
+}
+
+interface Category {
+  id: string | number;
+  name: string;
 }
 
 // Subcomponente local para controlar el estado de precarga e iconos fallback de la imagen (US7)
@@ -30,9 +37,9 @@ function ProductRowImage({ src, alt }: { src?: string; alt: string }) {
           <span className="material-symbols-outlined">image</span>
         </div>
       ) : (
-        <img 
-          src={src} 
-          alt={alt} 
+        <img
+          src={src}
+          alt={alt}
           onLoad={() => setLoaded(true)}
           onError={() => setError(true)}
           style={{ display: loaded ? 'block' : 'none' }}
@@ -43,6 +50,40 @@ function ProductRowImage({ src, alt }: { src?: string; alt: string }) {
   );
 }
 
+/** Mapea los estados que vienen del backend a etiquetas en español. */
+function normalizeStatus(status: string): string {
+  switch (status.toLowerCase()) {
+    case 'active':
+    case 'activo':
+      return 'Activo';
+    case 'low stock':
+    case 'stock bajo':
+    case 'bajo stock':
+      return 'Stock Bajo';
+    case 'out of stock':
+    case 'sin stock':
+      return 'Sin Stock';
+    case 'draft':
+    case 'borrador':
+      return 'Borrador';
+    default:
+      return status;
+  }
+}
+
+function getChipColor(status: string) {
+  switch (status) {
+    case 'Activo':
+      return 'success' as const;
+    case 'Stock Bajo':
+      return 'warning' as const;
+    case 'Sin Stock':
+      return 'danger' as const;
+    default:
+      return 'neutral' as const;
+  }
+}
+
 export default function ProductsList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -50,13 +91,15 @@ export default function ProductsList() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
 
+  const dialog = useDialog();
+  const snackbar = useSnackbar();
+
   useEffect(() => {
     async function fetchProducts() {
       try {
         setLoading(true);
         const data = await apiFetch<Product[]>('/products');
         if (Array.isArray(data)) {
-          // Normalizar estados a español si vienen en inglés desde el backend
           const normalized = data.map(p => ({
             ...p,
             status: normalizeStatus(p.status)
@@ -65,80 +108,49 @@ export default function ProductsList() {
         } else {
           setProducts([]);
         }
-      } catch (error) {
-        console.warn('Error al cargar productos del backend.', error);
+      } catch {
+        console.warn('Error al cargar productos del backend.');
         setProducts([]);
       } finally {
         setLoading(false);
       }
 
       try {
-        const categoriesList = await apiFetch<any[]>('/categories');
+        const categoriesList = await apiFetch<Category[]>('/categories');
         if (Array.isArray(categoriesList)) {
           setTotalCategories(categoriesList.length);
         }
-      } catch (error) {
-        // Fallback silencioso para categorías en estadísticas
+      } catch {
+        // Fallback silencioso
       }
     }
 
     fetchProducts();
   }, []);
 
-  const normalizeStatus = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'active':
-      case 'activo':
-        return 'Activo';
-      case 'low stock':
-      case 'stock bajo':
-      case 'bajo stock':
-        return 'Stock Bajo';
-      case 'out of stock':
-      case 'sin stock':
-        return 'Sin Stock';
-      case 'draft':
-      case 'borrador':
-        return 'Borrador';
-      default:
-        return status;
-    }
-  };
-
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case 'Activo':
-        return 'badge-success';
-      case 'Stock Bajo':
-        return 'badge-warning';
-      case 'Sin Stock':
-        return 'badge-danger';
-      default:
-        return 'badge-neutral';
-    }
-  };
-
   const handleDelete = async (id: string | number) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      return;
-    }
+    const confirmed = await dialog.confirm({
+      title: 'Eliminar producto',
+      message: '¿Estás seguro de que deseas eliminar este producto?',
+      confirmLabel: 'Eliminar',
+      cancelLabel: 'Cancelar',
+      danger: true,
+    });
+
+    if (!confirmed) return;
 
     try {
-      // Intentar eliminación física en el backend
       await apiFetch(`/products/${id}/delete`, {
         method: 'DELETE',
       });
-      // Actualizar estado local
       setProducts(prev => prev.filter(p => p.id !== id));
-    } catch (error) {
-      console.error('Error al eliminar producto del backend. Eliminando del estado local para deomstración.', error);
-      // Eliminar del estado local como fallback para que la interfaz responda al usuario
+      snackbar.show('Producto eliminado correctamente.');
+    } catch {
+      console.warn('Error al eliminar producto del backend. Eliminando del estado local.');
       setProducts(prev => prev.filter(p => p.id !== id));
     }
   };
 
-
-  // Filtrado dinámico por nombre, id o categoría (US8)
   const filteredProducts = products.filter(product => {
     const term = searchTerm.toLowerCase();
     return (
@@ -148,13 +160,11 @@ export default function ProductsList() {
     );
   });
 
-  // Cálculos estadísticos rápidos basados en el listado completo
   const totalProducts = products.length;
   const lowStockCount = products.filter(p => p.stock <= 12).length;
 
   return (
     <div className="products-canvas">
-      {/* Encabezado de Página y Acciones (US7 & US8) */}
       <div className={`products-header-section ${isSearchFocused ? 'search-active' : ''}`}>
         <div>
           <h2 className="headline-md">Productos</h2>
@@ -163,11 +173,11 @@ export default function ProductsList() {
         <div className="header-actions-group">
           <div className={`search-container ${isSearchFocused ? 'expanded' : ''}`}>
             <span className="material-symbols-outlined search-icon">search</span>
-            <input 
-              type="text" 
-              placeholder="Buscar productos..." 
-              value={searchTerm} 
-              onChange={(e) => setSearchTerm(e.target.value)} 
+            <input
+              type="text"
+              placeholder="Buscar productos..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
               className="search-input"
@@ -180,9 +190,8 @@ export default function ProductsList() {
         </div>
       </div>
 
-      {/* Tarjetas de Resumen */}
       <div className="products-summary-row">
-        <div className="products-summary-card">
+        <div className="products-summary-card card interactive">
           <div className="card-top">
             <span className="label-md text-secondary-color uppercase">Total de Productos</span>
             <span className="material-symbols-outlined summary-card-icon primary-text">inventory_2</span>
@@ -196,7 +205,7 @@ export default function ProductsList() {
           </div>
         </div>
 
-        <div className="products-summary-card">
+        <div className="products-summary-card card interactive">
           <div className="card-top">
             <span className="label-md text-secondary-color uppercase">Stock Bajo</span>
             <span className="material-symbols-outlined summary-card-icon error-text">warning</span>
@@ -210,7 +219,7 @@ export default function ProductsList() {
           </div>
         </div>
 
-        <div className="products-summary-card">
+        <div className="products-summary-card card interactive">
           <div className="card-top">
             <span className="label-md text-secondary-color uppercase">Categorías Activas</span>
             <span className="material-symbols-outlined summary-card-icon">category</span>
@@ -225,8 +234,7 @@ export default function ProductsList() {
         </div>
       </div>
 
-      {/* Tabla Principal de Datos */}
-      <div className="products-table-container card shadow-sm p-0">
+      <div className="products-table-container card p-0">
         <div className="table-responsive">
           <table className="md3-table">
             <thead>
@@ -244,8 +252,11 @@ export default function ProductsList() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="text-center text-secondary-color" style={{ padding: '32px' }}>
-                    Cargando productos...
+                  <td colSpan={8} className="text-center" style={{ padding: '32px' }}>
+                    <div className="loading-row">
+                      <CircularProgress size={32} />
+                      <span className="body-sm text-secondary-color" style={{ marginLeft: '12px' }}>Cargando productos...</span>
+                    </div>
                   </td>
                 </tr>
               ) : filteredProducts.length === 0 ? (
@@ -272,18 +283,16 @@ export default function ProductsList() {
                       {product.stock}
                     </td>
                     <td className="text-center">
-                      <span className={`status-badge ${getStatusBadgeClass(product.status)}`}>
-                        {product.status}
-                      </span>
+                      <Chip label={product.status} color={getChipColor(product.status)} />
                     </td>
                     <td className="text-right">
                       <div className="table-row-actions">
                         <Link to={`/products/${product.id}`} className="action-icon-btn" title="Editar">
                           <span className="material-symbols-outlined">edit</span>
                         </Link>
-                        <button 
+                        <button
                           onClick={() => handleDelete(product.id)}
-                          className="action-icon-btn hover-danger" 
+                          className="action-icon-btn hover-danger"
                           title="Eliminar"
                         >
                           <span className="material-symbols-outlined">delete</span>
@@ -297,7 +306,6 @@ export default function ProductsList() {
           </table>
         </div>
 
-        {/* Paginación */}
         <div className="table-pagination">
           <p className="body-sm text-secondary-color">
             Mostrando <span className="font-semibold text-on-surface">1</span> a{' '}

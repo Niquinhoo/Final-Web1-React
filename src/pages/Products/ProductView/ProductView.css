@@ -1,9 +1,12 @@
+/* ProductView — page-specific styles only.
+   Shared button/input/form/card/breadcrumb styles live in src/styles/md3-components.css */
+
 .product-view-canvas {
   max-width: 1400px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: var(--md-sys-spacing-8);
   animation: fadeIn 0.4s ease-out;
 }
 
@@ -13,52 +16,11 @@
   align-items: center;
 }
 
-.breadcrumbs {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-.breadcrumb-link {
-  color: var(--md-sys-color-primary);
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.2s;
-}
-
-.breadcrumb-link:hover {
-  text-decoration: underline;
-}
-
-.breadcrumb-separator {
-  font-size: 16px;
-  color: var(--md-sys-color-on-surface-variant);
-}
-
-.breadcrumb-current {
-  color: var(--md-sys-color-on-surface);
-  font-weight: 500;
-}
-
-/* MD3 Error/Danger Button */
-.md3-btn-danger {
-  background-color: var(--md-sys-color-error-container);
-  color: var(--md-sys-color-on-error-container);
-  border: 1px solid var(--md-sys-color-error);
-}
-
-.md3-btn-danger:hover {
-  background-color: var(--md-sys-color-error);
-  color: var(--md-sys-color-on-error);
-  box-shadow: 0 2px 6px rgba(179, 38, 30, 0.25);
-}
-
 /* Split Column */
 .product-view-split {
   display: grid;
   grid-template-columns: 320px 1fr;
-  gap: 24px;
+  gap: var(--md-sys-spacing-6);
   align-items: start;
 }
 
@@ -71,8 +33,7 @@
 .product-preview-card {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  gap: 18px;
+  gap: var(--md-sys-spacing-5);
 }
 
 .preview-image-box {
@@ -84,16 +45,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: var(--md-sys-spacing-3);
   color: var(--md-sys-color-on-surface-variant);
-  transition: background-color 0.2s;
 }
 
 .placeholder-image-icon {
   font-size: 48px;
   color: var(--md-sys-color-outline-variant);
   background: var(--md-sys-color-surface-container-high);
-  padding: 16px;
+  padding: var(--md-sys-spacing-4);
   border-radius: var(--md-sys-shape-corner-full);
 }
 
@@ -106,7 +66,7 @@
 .info-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--md-sys-spacing-2);
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
   padding-bottom: 10px;
   text-align: left;
@@ -119,7 +79,7 @@
 
 .info-row .label-sm {
   color: var(--md-sys-color-on-surface-variant);
-  font-size: 11px;
+  font-size: var(--md-sys-typescale-label-small-size);
 }
 
 .primary-text-color {
@@ -131,132 +91,29 @@
   text-align: left;
 }
 
-.md3-form {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.form-field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-field-group label {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: var(--md-sys-color-on-surface-variant);
-  padding-left: 4px;
-}
-
-/* MD3 Outlined Text Field design */
-.md3-input,
-.md3-textarea {
-  padding: 14px 16px; /* Touch target-friendly padding */
-  border: 1px solid var(--md-sys-color-outline);
-  border-radius: var(--md-sys-shape-corner-md);
-  font-size: 15px;
-  background-color: var(--md-sys-color-surface-container-lowest);
-  color: var(--md-sys-color-on-surface);
-  outline: none;
-  font-family: var(--sans);
-  box-sizing: border-box;
-  transition: border-color 0.2s cubic-bezier(0.2, 0, 0, 1), 
-              box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1),
-              background-color 0.2s;
-}
-
-.md3-input::placeholder,
-.md3-textarea::placeholder {
-  color: var(--md-sys-color-outline-variant);
-}
-
-.md3-input:hover,
-.md3-textarea:hover {
-  border-color: var(--md-sys-color-on-surface);
-}
-
-.md3-input:focus,
-.md3-textarea:focus {
-  border-color: var(--md-sys-color-primary);
-  border-width: 2px;
-  padding: 13px 15px; /* Offset the 2px border width to prevent jumpiness */
-  background-color: var(--md-sys-color-surface-container-lowest);
-  box-shadow: 0 0 0 4px rgba(11, 87, 208, 0.12);
-}
-
 /* Incremental stock buttons */
 .md3-stock-adjuster {
   display: flex;
-  gap: 8px;
+  gap: var(--md-sys-spacing-2);
   max-width: 200px;
-}
-
-.stock-adjust-btn {
-  width: 48px;
-  height: 48px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: 600;
-  border: 1px solid var(--md-sys-color-outline);
-  background-color: var(--md-sys-color-surface-container-low);
-  color: var(--md-sys-color-on-surface);
-  border-radius: var(--md-sys-shape-corner-md);
-  cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
-}
-
-.stock-adjust-btn:hover {
-  background-color: var(--md-sys-color-surface-container-highest);
-  border-color: var(--md-sys-color-on-surface);
-}
-
-.stock-adjust-btn:active {
-  transform: scale(0.92);
 }
 
 .stock-input {
   flex-grow: 1;
   text-align: center;
-  padding: 14px 4px !important;
+  padding: 14px var(--md-sys-spacing-1) !important;
   font-weight: 600;
-}
-
-/* Form actions */
-.form-btn-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 16px;
-  border-top: 1px solid var(--md-sys-color-outline-variant);
-  padding-top: 24px;
 }
 
 /* Image input controls (US9) */
 .input-with-button {
   display: flex;
-  gap: 12px;
+  gap: var(--md-sys-spacing-3);
   align-items: center;
   flex-wrap: wrap;
 }
 
-.btn-clear-image {
-  height: 48px;
-  padding: 0 16px;
-  white-space: nowrap;
-  background-color: var(--md-sys-color-surface-container-low);
-  border: 1px solid var(--md-sys-color-error);
-  color: var(--md-sys-color-error);
-  transition: all 0.2s;
+.form-fields-row {
+  display: flex;
+  gap: var(--md-sys-spacing-4);
 }
-
-.btn-clear-image:hover {
-  background-color: var(--md-sys-color-error-container);
-  color: var(--md-sys-color-on-error-container);
-  border-color: var(--md-sys-color-error);
-}
-

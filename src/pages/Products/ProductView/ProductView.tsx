@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../../utils/api';
+import { Button, IconButton, Card } from '../../../components/atoms';
+import { useDialog, useSnackbar } from '../../../components/molecules';
 import './ProductView.css';
 
 interface ProductData {
@@ -18,7 +20,9 @@ export default function ProductView() {
   const navigate = useNavigate();
   const isEditMode = id !== undefined;
 
-  // Estados del Formulario
+  const dialog = useDialog();
+  const snackbar = useSnackbar();
+
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState<number>(0);
   const [stock, setStock] = useState<number>(0);
@@ -26,22 +30,10 @@ export default function ProductView() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Electrónica');
   const [loading, setLoading] = useState(false);
-
-  // Almacenar los datos originales para poder revertir/cancelar cambios (US9)
   const [originalData, setOriginalData] = useState<ProductData | null>(null);
 
   useEffect(() => {
-    if (!isEditMode) {
-      // Valores por defecto al crear
-      setTitle('');
-      setPrice(0);
-      setStock(0);
-      setSrc('');
-      setDescription('');
-      setCategory('Electrónica');
-      setOriginalData(null);
-      return;
-    }
+    if (!isEditMode) return;
 
     async function loadProduct() {
       try {
@@ -70,25 +62,32 @@ export default function ProductView() {
     setStock(prev => Math.max(0, prev + amount));
   };
 
-  const handleCancel = () => {
-    // Revierte los cambios de los inputs al estado original cargado (US9)
+  const handleCancel = async () => {
     if (isEditMode && originalData) {
-      setTitle(originalData.title || '');
-      setPrice(originalData.price || 0);
-      setStock(originalData.stock || 0);
-      setSrc(originalData.src || '');
-      setDescription(originalData.description || '');
-      setCategory(originalData.category || 'Electrónica');
-      alert('Cambios revertidos al estado original.');
+      const confirmed = await dialog.confirm({
+        title: 'Revertir cambios',
+        message: '¿Deseas descartar los cambios realizados y volver al estado original?',
+        confirmLabel: 'Revertir',
+        cancelLabel: 'Cancelar',
+      });
+
+      if (confirmed) {
+        setTitle(originalData.title || '');
+        setPrice(originalData.price || 0);
+        setStock(originalData.stock || 0);
+        setSrc(originalData.src || '');
+        setDescription(originalData.description || '');
+        setCategory(originalData.category || 'Electrónica');
+        snackbar.show('Cambios revertidos al estado original.');
+      }
     } else {
-      // Si es creación, limpia el formulario
       setTitle('');
       setPrice(0);
       setStock(0);
       setSrc('');
       setDescription('');
       setCategory('Electrónica');
-      alert('Formulario de creación restablecido.');
+      snackbar.show('Formulario de creación restablecido.');
     }
   };
 
@@ -96,7 +95,6 @@ export default function ProductView() {
     e.preventDefault();
     setLoading(true);
 
-    // Validación local de valores negativos o no numéricos (US9 / US10)
     const validatedPrice = Math.max(0, Number(price) || 0);
     const validatedStock = Math.max(0, Math.floor(Number(stock)) || 0);
 
@@ -110,9 +108,6 @@ export default function ProductView() {
     };
 
     try {
-      // Rutas corregidas para SQLite (US9 & US10):
-      // Edición: PUT /products/:id/edit
-      // Creación: POST /products/new
       const endpoint = isEditMode ? `/products/${id}/edit` : '/products/new';
       const method = isEditMode ? 'PUT' : 'POST';
 
@@ -121,11 +116,11 @@ export default function ProductView() {
         body: JSON.stringify(productPayload),
       });
 
-      alert(isEditMode ? 'Producto actualizado correctamente.' : 'Producto creado correctamente.');
+      snackbar.show(isEditMode ? 'Producto actualizado correctamente.' : 'Producto creado correctamente.');
       navigate('/products');
     } catch (error) {
       console.error('Error al guardar el producto en el backend:', error);
-      alert('Se guardaron los datos con éxito.');
+      snackbar.show('Se guardaron los datos con éxito.');
       navigate('/products');
     } finally {
       setLoading(false);
@@ -133,21 +128,26 @@ export default function ProductView() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      return;
-    }
+    const confirmed = await dialog.confirm({
+      title: 'Eliminar producto',
+      message: '¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      cancelLabel: 'Cancelar',
+      danger: true,
+    });
+
+    if (!confirmed) return;
 
     setLoading(true);
     try {
-      // Ruta de eliminación física para SQLite: DELETE /products/:id/delete
       await apiFetch(`/products/${id}/delete`, {
         method: 'DELETE',
       });
-      alert('Producto eliminado correctamente.');
+      snackbar.show('Producto eliminado correctamente.');
       navigate('/products');
     } catch (error) {
       console.error('Error al eliminar el producto del backend:', error);
-      alert('Se eliminó el producto con éxito.');
+      snackbar.show('Se eliminó el producto con éxito.');
       navigate('/products');
     } finally {
       setLoading(false);
@@ -156,7 +156,6 @@ export default function ProductView() {
 
   return (
     <div className="product-view-canvas">
-      {/* Encabezado de Página */}
       <div className="product-view-header-section">
         <div className="breadcrumbs font-body-sm text-secondary-color">
           <Link to="/products" className="breadcrumb-link">Productos</Link>
@@ -164,22 +163,14 @@ export default function ProductView() {
           <span className="breadcrumb-current">{isEditMode ? `#${id}` : 'Nuevo Producto'}</span>
         </div>
         {isEditMode && (
-          <button 
-            type="button"
-            onClick={handleDelete}
-            className="md3-btn md3-btn-danger"
-            disabled={loading}
-          >
-            <span className="material-symbols-outlined icon-btn">delete</span>
+          <Button variant="danger" icon="delete" onClick={handleDelete} disabled={loading}>
             Eliminar
-          </button>
+          </Button>
         )}
       </div>
 
-      {/* Distribución del Contenido */}
       <div className="product-view-split">
-        {/* Lado Izquierdo: Vista Previa */}
-        <div className="product-preview-card card shadow-sm">
+        <Card className="product-preview-card">
           <h3 className="headline-sm">Vista Previa</h3>
           <div className="preview-image-box">
             {src ? (
@@ -217,21 +208,20 @@ export default function ProductView() {
               <span className="body-md font-semibold text-primary-text-color">${price.toFixed(2)}</span>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Lado Derecho: Formulario */}
-        <div className="product-edit-card card shadow-sm">
+        <Card className="product-edit-card">
           <h3 className="headline-sm">
             {isEditMode ? 'Detalle y Edición del Producto' : 'Agregar Nuevo Producto'}
           </h3>
           <form onSubmit={handleSave} className="md3-form">
             <div className="form-field-group">
               <label htmlFor="prod-name" className="label-sm uppercase">Nombre del Producto *</label>
-              <input 
-                type="text" 
-                id="prod-name" 
-                required 
-                value={title} 
+              <input
+                type="text"
+                id="prod-name"
+                required
+                value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Ej: Silla de Oficina Ergonómica"
                 className="md3-input"
@@ -242,13 +232,13 @@ export default function ProductView() {
             <div className="form-fields-row" style={{ display: 'flex', gap: '16px' }}>
               <div className="form-field-group flex-1">
                 <label htmlFor="prod-price" className="label-sm uppercase">Precio ($) *</label>
-                <input 
-                  type="number" 
-                  id="prod-price" 
-                  min="0" 
+                <input
+                  type="number"
+                  id="prod-price"
+                  min="0"
                   step="0.01"
                   required
-                  value={price === 0 ? '' : price} 
+                  value={price === 0 ? '' : price}
                   onChange={(e) => setPrice(Number(e.target.value))}
                   placeholder="0.00"
                   className="md3-input"
@@ -258,7 +248,7 @@ export default function ProductView() {
 
               <div className="form-field-group flex-1">
                 <label htmlFor="prod-category" className="label-sm uppercase">Categoría *</label>
-                <select 
+                <select
                   id="prod-category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
@@ -278,66 +268,66 @@ export default function ProductView() {
             <div className="form-field-group">
               <label htmlFor="prod-stock" className="label-sm uppercase">Stock *</label>
               <div className="md3-stock-adjuster">
-                <button 
-                  type="button" 
-                  onClick={() => handleStockChange(-1)} 
-                  className="stock-adjust-btn"
+                <IconButton
+                  variant="outlined"
+                  icon="remove"
+                  label="Reducir stock"
+                  onClick={() => handleStockChange(-1)}
                   disabled={loading}
-                >
-                  -
-                </button>
-                <input 
-                  type="number" 
-                  id="prod-stock" 
-                  min="0" 
+                  size={20}
+                />
+                <input
+                  type="number"
+                  id="prod-stock"
+                  min="0"
                   required
-                  value={stock} 
+                  value={stock}
                   onChange={(e) => setStock(Math.max(0, Number(e.target.value)))}
                   className="md3-input stock-input"
                   disabled={loading}
                 />
-                <button 
-                  type="button" 
-                  onClick={() => handleStockChange(1)} 
-                  className="stock-adjust-btn"
+                <IconButton
+                  variant="outlined"
+                  icon="add"
+                  label="Aumentar stock"
+                  onClick={() => handleStockChange(1)}
                   disabled={loading}
-                >
-                  +
-                </button>
+                  size={20}
+                />
               </div>
             </div>
 
             <div className="form-field-group">
               <label htmlFor="prod-image" className="label-sm uppercase">URL de Imagen</label>
               <div className="input-with-button">
-                <input 
-                  type="text" 
-                  id="prod-image" 
+                <input
+                  type="text"
+                  id="prod-image"
                   value={src}
                   onChange={(e) => setSrc(e.target.value)}
-                  placeholder="https://ejemplo.com/imagen.jpg" 
+                  placeholder="https://ejemplo.com/imagen.jpg"
                   className="md3-input flex-1"
                   disabled={loading}
                 />
                 {src && (
-                  <button 
-                    type="button" 
-                    onClick={() => setSrc('')} 
-                    className="md3-btn md3-btn-outlined btn-clear-image"
+                  <Button
+                    variant="outlined"
+                    icon="no_photography"
+                    onClick={() => setSrc('')}
                     disabled={loading}
+                    size="sm"
                   >
-                    <span className="material-symbols-outlined">no_photography</span>
                     Eliminar Imagen
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
 
             <div className="form-field-group">
               <label htmlFor="prod-desc" className="label-sm uppercase">Descripción</label>
-              <textarea 
-                id="prod-desc" 
-                rows={4} 
+              <textarea
+                id="prod-desc"
+                rows={4}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Describe detalladamente las características del producto..."
@@ -347,21 +337,15 @@ export default function ProductView() {
             </div>
 
             <div className="form-btn-actions">
-              <button 
-                type="button" 
-                onClick={handleCancel} 
-                className="md3-btn md3-btn-outlined" 
-                style={{ height: '48px' }}
-                disabled={loading}
-              >
+              <Button variant="outlined" onClick={handleCancel} disabled={loading}>
                 Cancelar
-              </button>
-              <button type="submit" className="md3-btn md3-btn-filled" disabled={loading}>
+              </Button>
+              <Button variant="filled" type="submit" disabled={loading}>
                 {isEditMode ? 'Guardar Cambios' : 'Crear Producto'}
-              </button>
+              </Button>
             </div>
           </form>
-        </div>
+        </Card>
       </div>
     </div>
   );

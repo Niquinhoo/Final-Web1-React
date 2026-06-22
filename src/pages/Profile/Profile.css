@@ -1,9 +1,12 @@
+/* Profile — page-specific styles only.
+   Shared button/input/form/card styles live in src/styles/md3-components.css */
+
 .profile-canvas {
   max-width: 1000px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: var(--md-sys-spacing-8);
   animation: fadeIn 0.4s ease-out;
 }
 
@@ -12,13 +15,13 @@
 }
 
 .profile-header-section p {
-  margin-top: 4px;
+  margin-top: var(--md-sys-spacing-1);
 }
 
 .profile-grid {
   display: grid;
   grid-template-columns: 300px 1fr;
-  gap: 24px;
+  gap: var(--md-sys-spacing-6);
   align-items: start;
 }
 
@@ -31,7 +34,7 @@
 .profile-sidebar-column {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--md-sys-spacing-6);
 }
 
 .avatar-card {
@@ -39,14 +42,14 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 12px;
+  gap: var(--md-sys-spacing-3);
 }
 
 .avatar-wrapper {
   position: relative;
   width: 128px;
   height: 128px;
-  margin-bottom: 8px;
+  margin-bottom: var(--md-sys-spacing-2);
 }
 
 .avatar-large {
@@ -55,45 +58,21 @@
   border-radius: var(--md-sys-shape-corner-full);
   object-fit: cover;
   border: 4px solid var(--md-sys-color-surface-container-lowest);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--md-sys-elevation-2);
 }
 
 .avatar-edit-btn {
   position: absolute;
   bottom: 0;
   right: 0;
-  background-color: var(--md-sys-color-primary);
-  color: var(--md-sys-color-on-primary);
-  border: 3px solid var(--md-sys-color-surface-container-lowest);
-  border-radius: var(--md-sys-shape-corner-full);
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  transition: background-color 0.2s, color 0.2s, transform 0.1s;
 }
 
-.avatar-edit-btn:hover {
-  background-color: #0b57d0e0;
-  transform: scale(1.05);
-}
-
-.avatar-edit-btn:active {
-  transform: scale(0.95);
-}
-
-.avatar-edit-btn span {
-  font-size: 18px;
-}
-
+/* Status pill */
 .status-pill-container {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
+  gap: var(--md-sys-spacing-2);
+  padding: var(--md-sys-spacing-2) 14px;
   background-color: var(--md-sys-color-surface-container-high);
   border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: var(--md-sys-shape-corner-full);
@@ -102,7 +81,7 @@
 .status-pill-dot {
   width: 8px;
   height: 8px;
-  background-color: #137333; /* Google Active Green */
+  background-color: var(--md-sys-color-success);
   border-radius: var(--md-sys-shape-corner-full);
 }
 
@@ -112,7 +91,7 @@
 }
 
 .quick-stats-card h4 {
-  margin-bottom: 16px;
+  margin-bottom: var(--md-sys-spacing-4);
   font-size: 11px;
   letter-spacing: 0.08em;
 }
@@ -143,44 +122,26 @@
 
 .form-card-title {
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
-  padding-bottom: 16px;
-  margin-bottom: 24px;
+  padding-bottom: var(--md-sys-spacing-4);
+  margin-bottom: var(--md-sys-spacing-6);
 }
 
 .md3-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--md-sys-spacing-5);
 }
 
 .form-fields-row {
   display: flex;
-  gap: 16px;
+  gap: var(--md-sys-spacing-4);
 }
 
 @media (max-width: 768px) {
   .form-fields-row {
     flex-direction: column;
-    gap: 20px;
+    gap: var(--md-sys-spacing-5);
   }
-}
-
-.flex-1 {
-  flex: 1;
-}
-
-.form-field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-field-group label {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: var(--md-sys-color-on-surface-variant);
-  padding-left: 4px;
 }
 
 /* Outlined mail icon inside input wrapper */
@@ -193,11 +154,11 @@
 
 .input-icon {
   position: absolute;
-  left: 16px;
+  left: var(--md-sys-spacing-4);
   color: var(--md-sys-color-on-surface-variant);
   font-size: 20px;
   pointer-events: none;
-  transition: color 0.2s;
+  transition: color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
   z-index: 1;
 }
 
@@ -207,12 +168,4 @@
 
 .input-with-icon:focus-within .input-icon {
   color: var(--md-sys-color-primary);
-}
-
-.pl-xl {
-  padding-left: 48px !important;
-}
-
-.mt-lg {
-  margin-top: 24px;
 }

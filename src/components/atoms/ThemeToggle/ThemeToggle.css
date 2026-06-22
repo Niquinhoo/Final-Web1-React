@@ -1,0 +1,46 @@
+.md3-theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  color: var(--md-sys-color-on-surface-variant);
+  background-color: transparent;
+  transition: background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.md3-theme-toggle span {
+  font-size: 22px;
+  position: relative;
+  z-index: 1;
+}
+
+.md3-theme-toggle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  opacity: 0;
+  border-radius: inherit;
+  transition: opacity var(--md-sys-motion-duration-short2) linear;
+  z-index: 0;
+}
+
+.md3-theme-toggle:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.md3-theme-toggle:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+.md3-theme-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--md-sys-color-secondary);
+}

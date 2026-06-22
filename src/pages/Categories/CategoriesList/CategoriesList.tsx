@@ -62,8 +62,8 @@ export default function CategoriesList() {
           </div>
         ) : (
           categories.map(category => (
-            <div key={category.id} className="category-card card shadow-sm">
-              <span className="material-symbols-outlined category-card-icon primary-text">
+            <div key={category.id} className="category-card">
+              <span className="material-symbols-outlined category-card-icon">
                 {category.icon || 'folder'}
               </span>
               <div className="category-info">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiFetch } from '../../utils/api';
+import { Card } from '../../components/atoms';
 import './Home.css';
 
 interface Product {
@@ -28,35 +29,33 @@ interface Activity {
   removed?: boolean;
 }
 
+function getStoredUsername(): string {
+  try {
+    const saved = localStorage.getItem('user_profile');
+    if (saved) {
+      const parsed = JSON.parse(saved) as { firstName?: string };
+      if (parsed.firstName) return parsed.firstName;
+    }
+  } catch {
+    // ignore
+  }
+  return 'Administrador';
+}
+
 export default function Home() {
   const [totalProducts, setTotalProducts] = useState<number>(0);
   const [totalCategories, setTotalCategories] = useState<number>(0);
   const [lowStock, setLowStock] = useState<number>(0);
   const [recentSales] = useState<string>('$0.00');
   const [activities] = useState<Activity[]>([]);
-  const [username, setUsername] = useState<string>('Administrador');
+  const [username] = useState<string>(getStoredUsername);
 
   useEffect(() => {
-    // Intentar leer el nombre del perfil desde localStorage
-    const saved = localStorage.getItem('user_profile');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as { firstName?: string };
-        if (parsed.firstName) {
-          setUsername(parsed.firstName);
-        }
-      } catch (e) {
-        console.error('Error al parsear el perfil del usuario para el saludo:', e);
-      }
-    }
-
     async function loadDashboardData() {
       try {
-        // Intentar obtener productos reales del backend
         const productsList = await apiFetch<Product[]>('/products');
         if (Array.isArray(productsList)) {
           setTotalProducts(productsList.length);
-          // Calcular productos con bajo stock (ej: stock <= 12)
           const lowStockCount = productsList.filter(p => p.stock <= 12).length;
           setLowStock(lowStockCount);
         }
@@ -65,7 +64,6 @@ export default function Home() {
       }
 
       try {
-        // Intentar obtener categorías reales del backend
         const categoriesList = await apiFetch<Category[]>('/categories');
         if (Array.isArray(categoriesList)) {
           setTotalCategories(categoriesList.length);
@@ -80,16 +78,13 @@ export default function Home() {
 
   return (
     <div className="home-canvas">
-      {/* Encabezado de la Página (US6) */}
       <div className="page-header">
         <h2 className="display-lg">¡Hola {username}!</h2>
         <p className="body-lg text-secondary-color">Bienvenido de nuevo. Esto es lo que está pasando en tu catálogo hoy.</p>
       </div>
 
-      {/* Cuadrícula de Estadísticas */}
       <div className="stats-grid">
-        {/* Tarjeta 1 (Productos con acciones integradas) */}
-        <div className="stat-card action-stat-card">
+        <Card interactive className="stat-card action-stat-card">
           <div className="stat-card-header">
             <span className="label-md text-secondary-color uppercase">Productos</span>
             <span className="material-symbols-outlined stat-icon primary-icon">inventory_2</span>
@@ -110,10 +105,9 @@ export default function Home() {
               Agregar Producto
             </Link>
           </div>
-        </div>
+        </Card>
 
-        {/* Tarjeta 2 (Categorías con acciones integradas) */}
-        <div className="stat-card action-stat-card">
+        <Card interactive className="stat-card action-stat-card">
           <div className="stat-card-header">
             <span className="label-md text-secondary-color uppercase">Categorías</span>
             <span className="material-symbols-outlined stat-icon primary-icon">category</span>
@@ -132,10 +126,9 @@ export default function Home() {
               Agregar Categoría
             </Link>
           </div>
-        </div>
+        </Card>
 
-        {/* Tarjeta 3 (Alerta de Stock Bajo) */}
-        <div className="stat-card border-error">
+        <Card interactive className="stat-card border-error">
           <div className="stat-card-header">
             <span className="label-md text-secondary-color uppercase">Stock Bajo</span>
             <span className="material-symbols-outlined stat-icon error-icon">warning</span>
@@ -146,10 +139,9 @@ export default function Home() {
             <span className="trend-percentage error-text">+{lowStock}</span>
             <span className="trend-label text-secondary-color">requieren reabastecimiento</span>
           </div>
-        </div>
+        </Card>
 
-        {/* Tarjeta 4 */}
-        <div className="stat-card">
+        <Card interactive className="stat-card">
           <div className="stat-card-header">
             <span className="label-md text-secondary-color uppercase">Ventas Recientes (30d)</span>
             <span className="material-symbols-outlined stat-icon primary-icon">payments</span>
@@ -160,25 +152,20 @@ export default function Home() {
             <span className="trend-percentage primary-text">+8.1%</span>
             <span className="trend-label text-secondary-color">vs período anterior</span>
           </div>
-        </div>
+        </Card>
       </div>
 
-      {/* Distribución del Contenido Principal */}
       <div className="home-split-layout">
-        {/* Acciones Rápidas y Alertas */}
         <div className="left-column">
-          {/* Gráfico Visual */}
-          <div className="card shadow-sm flex-center min-h-200 bg-container-low">
+          <Card className="flex-center min-h-200 bg-container-low">
             <div className="visual-placeholder text-center">
               <span className="material-symbols-outlined placeholder-icon">bar_chart</span>
               <p className="body-sm text-secondary-color">Gráfico de Estado del Inventario<br/>(Respaldo Visual)</p>
             </div>
-          </div>
+          </Card>
         </div>
 
-
-        {/* Tabla de Actividad Reciente */}
-        <div className="right-column card shadow-sm p-0">
+        <Card noPadding className="right-column">
           <div className="table-header">
             <h3 className="headline-sm">Actividad Reciente</h3>
             <button className="text-btn">Ver Todo</button>
@@ -222,7 +209,7 @@ export default function Home() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

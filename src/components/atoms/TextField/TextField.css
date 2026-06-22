@@ -1,0 +1,162 @@
+/* MD3 Outlined Text Field with floating label + notch.
+   The outline is drawn with a border; the label sits on a background-coloured
+   gap that creates the "notch" when the field is populated/focused. */
+
+.md3-textfield {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-1);
+  width: 100%;
+  text-align: left;
+}
+
+.md3-textfield__field {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+
+.md3-textfield__field input,
+.md3-textfield__field textarea {
+  width: 100%;
+  padding: 16px var(--md-sys-spacing-4);
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-xs);
+  background-color: transparent;
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-body-large-size);
+  font-family: var(--sans);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+              box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.md3-textfield__field textarea {
+  min-height: 96px;
+  border-radius: var(--md-sys-shape-corner-sm);
+  resize: vertical;
+}
+
+.md3-textfield__field input::placeholder,
+.md3-textfield__field textarea::placeholder {
+  color: transparent;
+}
+
+/* Placeholder shows only when focused + populated */
+.md3-textfield__field input:focus::placeholder,
+.md3-textfield__field textarea:focus::placeholder {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.md3-textfield__field input:hover,
+.md3-textfield__field textarea:hover {
+  border-color: var(--md-sys-color-on-surface);
+}
+
+.md3-textfield__field input:focus,
+.md3-textfield__field textarea:focus {
+  border-color: var(--md-sys-color-primary);
+  border-width: 2px;
+  padding: 15px 15px;
+}
+
+.md3-textfield.is-error .md3-textfield__field input,
+.md3-textfield.is-error .md3-textfield__field textarea {
+  border-color: var(--md-sys-color-error);
+}
+
+.md3-textfield.is-error .md3-textfield__field input:focus,
+.md3-textfield.is-error .md3-textfield__field textarea:focus {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--md-sys-color-error) 12%, transparent);
+}
+
+/* Leading/trailing icons pad the input */
+.md3-textfield.has-leading .md3-textfield__field input,
+.md3-textfield.has-leading .md3-textfield__field textarea {
+  padding-left: 48px;
+}
+
+.md3-textfield.has-trailing .md3-textfield__field input,
+.md3-textfield.has-trailing .md3-textfield__field textarea {
+  padding-right: 48px;
+}
+
+.md3-textfield__leading,
+.md3-textfield__trailing {
+  position: absolute;
+  font-size: 22px;
+  color: var(--md-sys-color-on-surface-variant);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.md3-textfield__leading { left: 12px; }
+.md3-textfield__trailing { right: 12px; }
+
+.md3-textfield.is-error .md3-textfield__leading,
+.md3-textfield.is-error .md3-textfield__trailing {
+  color: var(--md-sys-color-error);
+}
+
+/* Floating label */
+.md3-textfield__label {
+  position: absolute;
+  left: var(--md-sys-spacing-4);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-body-large-size);
+  font-family: var(--sans);
+  padding: 0 var(--md-sys-spacing-1);
+  background-color: var(--md-sys-color-surface-container-lowest);
+  pointer-events: none;
+  transition: transform var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+              font-size var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+              color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+  max-width: calc(100% - 32px);
+}
+
+.md3-textfield.has-leading .md3-textfield__label {
+  left: 48px;
+}
+
+/* Float when focused or populated */
+.md3-textfield.is-populated .md3-textfield__label,
+.md3-textfield__field input:focus + .md3-textfield__label,
+.md3-textfield__field textarea:focus ~ .md3-textfield__label,
+.md3-textfield__field:focus-within .md3-textfield__label {
+  transform: translateY(-130%) scale(0.75);
+  color: var(--md-sys-color-primary);
+}
+
+.md3-textfield.is-error .md3-textfield__label,
+.md3-textfield.is-error.md3-textfield__field:focus-within .md3-textfield__label {
+  color: var(--md-sys-color-error);
+}
+
+/* Disabled */
+.md3-textfield.is-disabled .md3-textfield__field input,
+.md3-textfield.is-disabled .md3-textfield__field textarea {
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 4%, transparent);
+  cursor: not-allowed;
+}
+
+.md3-textfield.is-disabled .md3-textfield__label {
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+}
+
+/* Supporting / error text */
+.md3-textfield__supporting {
+  font-size: var(--md-sys-typescale-body-small-size);
+  color: var(--md-sys-color-on-surface-variant);
+  padding-left: var(--md-sys-spacing-4);
+  min-height: 16px;
+}
+
+.md3-textfield__supporting.is-error {
+  color: var(--md-sys-color-error);
+}

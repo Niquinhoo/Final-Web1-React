@@ -1,9 +1,12 @@
+/* CategoriesList — page-specific styles only.
+   Shared button/card styles live in src/styles/md3-components.css */
+
 .categories-canvas {
   max-width: 1400px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: var(--md-sys-spacing-8);
   animation: fadeIn 0.4s ease-out;
 }
 
@@ -11,19 +14,24 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: var(--md-sys-spacing-4);
   flex-wrap: wrap;
   text-align: left;
 }
 
 .categories-header-section p {
-  margin-top: 4px;
+  margin-top: var(--md-sys-spacing-1);
+}
+
+.header-actions-group {
+  display: flex;
+  gap: var(--md-sys-spacing-3);
 }
 
 .categories-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
+  gap: var(--md-sys-spacing-6);
 }
 
 /* Category card - styled as MD3 Filled Card */
@@ -32,20 +40,20 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 16px;
-  padding: 32px 24px;
+  gap: var(--md-sys-spacing-4);
+  padding: var(--md-sys-spacing-8) var(--md-sys-spacing-6);
   background-color: var(--md-sys-color-surface-container-low);
   border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: var(--md-sys-shape-corner-xl);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), 
-              box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1), 
-              border-color 0.2s;
+  box-shadow: var(--md-sys-elevation-1);
+  transition: transform var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+              box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+              border-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
 }
 
 .category-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--md-sys-elevation-3);
   border-color: var(--md-sys-color-outline);
   background-color: var(--md-sys-color-surface-container);
 }
@@ -59,9 +67,9 @@
   justify-content: center;
   color: var(--md-sys-color-primary);
   background-color: var(--md-sys-color-primary-container);
-  border-radius: var(--md-sys-shape-corner-full);
-  box-shadow: 0 2px 8px rgba(11, 87, 208, 0.15);
-  transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+  border-radius: var(--md-sys-shape-corner-lg);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--md-sys-color-primary) 15%, transparent);
+  transition: transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
 }
 
 .category-card:hover .category-card-icon {
@@ -69,7 +77,7 @@
 }
 
 .category-info h3 {
-  margin: 0 0 6px 0;
+  margin: 0 0 var(--md-sys-spacing-2) 0;
   font-size: 18px;
 }
 
@@ -80,7 +88,7 @@
 
 .category-actions {
   width: 100%;
-  margin-top: 12px;
+  margin-top: var(--md-sys-spacing-3);
 }
 
 .category-actions .btn-sm {

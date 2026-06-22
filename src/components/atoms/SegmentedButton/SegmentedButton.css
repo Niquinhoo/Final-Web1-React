@@ -1,0 +1,73 @@
+.md3-segmented-button {
+  display: inline-flex;
+  border-radius: var(--md-sys-shape-corner-full);
+  overflow: hidden;
+  border: 1px solid var(--md-sys-color-outline);
+  height: var(--md-sys-spacing-12);
+}
+
+.md3-segmented-button__segment {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-2);
+  padding: 0 var(--md-sys-spacing-4);
+  min-width: 0;
+  border: none;
+  border-right: 1px solid var(--md-sys-color-outline);
+  background-color: transparent;
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: 600;
+  font-family: var(--sans);
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.md3-segmented-button__segment.is-last {
+  border-right: none;
+}
+
+.md3-segmented-button__segment.is-selected {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.md3-segmented-button__check,
+.md3-segmented-button__icon {
+  font-size: 18px;
+  position: relative;
+  z-index: 1;
+}
+
+.md3-segmented-button__label {
+  position: relative;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+.md3-segmented-button__segment::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short2) linear;
+  z-index: 0;
+}
+
+.md3-segmented-button__segment:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.md3-segmented-button .md3-ripple {
+  position: absolute;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: currentColor;
+  opacity: 0.12;
+  transform: scale(0);
+  animation: md3-ripple 600ms var(--md-sys-motion-easing-standard);
+  pointer-events: none;
+  z-index: 0;
+}

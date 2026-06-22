@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { Button, IconButton, Card } from '../../components/atoms';
+import { useSnackbar } from '../../components/molecules';
 import './Profile.css';
 
 interface ProfileData {
@@ -9,101 +11,77 @@ interface ProfileData {
   bio: string;
 }
 
-export default function Profile() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [jobTitle, setJobTitle] = useState('');
-  const [bio, setBio] = useState('');
-
-  // Cargar datos de LocalStorage al iniciar
-  useEffect(() => {
+function loadProfile(): ProfileData {
+  try {
     const saved = localStorage.getItem('user_profile');
     if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as ProfileData;
-        setFirstName(parsed.firstName || '');
-        setLastName(parsed.lastName || '');
-        setEmail(parsed.email || '');
-        setJobTitle(parsed.jobTitle || '');
-        setBio(parsed.bio || '');
-      } catch (e) {
-        console.error('Error al parsear el perfil guardado en localStorage:', e);
-      }
+      const parsed = JSON.parse(saved) as ProfileData;
+      return {
+        firstName: parsed.firstName || '',
+        lastName: parsed.lastName || '',
+        email: parsed.email || '',
+        jobTitle: parsed.jobTitle || '',
+        bio: parsed.bio || '',
+      };
     }
-  }, []);
+  } catch {
+    // ignore
+  }
+  return { firstName: '', lastName: '', email: '', jobTitle: '', bio: '' };
+}
+
+export default function Profile() {
+  const [profile, setProfile] = useState<ProfileData>(loadProfile);
+  const snackbar = useSnackbar();
+
+  const setField = <K extends keyof ProfileData>(field: K, value: ProfileData[K]) => {
+    setProfile(prev => ({ ...prev, [field]: value }));
+  };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    const profileData: ProfileData = {
-      firstName,
-      lastName,
-      email,
-      jobTitle,
-      bio,
-    };
-    localStorage.setItem('user_profile', JSON.stringify(profileData));
-    alert('Cambios del perfil guardados con éxito.');
+    localStorage.setItem('user_profile', JSON.stringify(profile));
+    snackbar.show('Cambios del perfil guardados con éxito.');
   };
 
   const handleCancel = () => {
-    // Restaurar los datos desde localStorage o reiniciar a vacío
-    const saved = localStorage.getItem('user_profile');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as ProfileData;
-        setFirstName(parsed.firstName || '');
-        setLastName(parsed.lastName || '');
-        setEmail(parsed.email || '');
-        setJobTitle(parsed.jobTitle || '');
-        setBio(parsed.bio || '');
-      } catch (e) {
-        // ignore
-      }
-    } else {
-      setFirstName('');
-      setLastName('');
-      setEmail('');
-      setJobTitle('');
-      setBio('');
-    }
-    alert('Edición cancelada. Se restauraron los datos guardados.');
+    const restored = loadProfile();
+    setProfile(restored);
+    snackbar.show('Edición cancelada. Se restauraron los datos guardados.');
   };
 
   return (
     <div className="profile-canvas">
-      {/* Encabezado de Página */}
       <div className="profile-header-section">
         <h2 className="headline-md">Perfil de Administrador</h2>
         <p className="body-md text-secondary-color mt-xs">Gestiona tu información personal y la configuración de tu cuenta.</p>
       </div>
 
-      {/* Grid Principal */}
       <div className="profile-grid">
-        {/* Columna Izquierda: Avatar y Estadísticas Rápidas */}
         <div className="profile-sidebar-column">
-          {/* Tarjeta de Avatar */}
-          <div className="avatar-card card shadow-sm">
+          <Card className="avatar-card">
             <div className="avatar-wrapper">
-              <img 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaeBYJjn2bFdPYlZwRJMbeJ9RlrIfLlDr6uXMF0Fp8TUIT_RztkcXiw7EIDg6GMOxVZVkcoQJl-0xy5wkdGzUkcyPneySklfyjMQPoj2J-jDFKGhSqIuhCWqQmb16nF89cbEIM_3zPYFKmhD3FFtvQdizgstj-H3EMsBixCeMMoWs24YlKkHpr-MrjHvDEiUOhRDVvc7fkdB15qtT_taf_QJOmbsaseh-XHacfVhQqlMzEgykfrrLZTqSx0lz10Hq3erymqm4SRkFE" 
-                alt="Avatar del Administrador" 
+              <img
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaeBYJjn2bFdPYlZwRJMbeJ9RlrIfLlDr6uXMF0Fp8TUIT_RztkcXiw7EIDg6GMOxVZVkcoQJl-0xy5wkdGzUkcyPneySklfyjMQPoj2J-jDFKGhSqIuhCWqQmb16nF89cbEIM_3zPYFKmhD3FFtvQdizgstj-H3EMsBixCeMMoWs24YlKkHpr-MrjHvDEiUOhRDVvc7fkdB15qtT_taf_QJOmbsaseh-XHacfVhQqlMzEgykfrrLZTqSx0lz10Hq3erymqm4SRkFE"
+                alt="Avatar del Administrador"
                 className="avatar-large"
               />
-              <button type="button" className="avatar-edit-btn" aria-label="Editar foto de perfil">
-                <span className="material-symbols-outlined">edit</span>
-              </button>
+              <IconButton
+                variant="tonal"
+                icon="edit"
+                label="Editar foto de perfil"
+                className="avatar-edit-btn"
+              />
             </div>
-            <h3 className="headline-sm">{firstName} {lastName}</h3>
-            <p className="body-md text-secondary-color font-medium">{jobTitle}</p>
+            <h3 className="headline-sm">{profile.firstName} {profile.lastName}</h3>
+            <p className="body-md text-secondary-color font-medium">{profile.jobTitle}</p>
             <div className="status-pill-container">
               <span className="status-pill-dot"></span>
               <span className="label-sm text-on-surface font-semibold">Cuenta Activa</span>
             </div>
-          </div>
+          </Card>
 
-          {/* Tarjeta de Estadísticas Rápidas */}
-          <div className="quick-stats-card card shadow-sm">
+          <Card className="quick-stats-card">
             <h4 className="label-md uppercase text-secondary-color mb-sm font-semibold">Estadísticas Rápidas</h4>
             <div className="stats-list">
               <div className="stats-list-item">
@@ -119,30 +97,29 @@ export default function Profile() {
                 <span className="body-sm font-semibold text-on-surface">Operaciones</span>
               </div>
             </div>
-          </div>
+          </Card>
         </div>
 
-        {/* Columna Derecha: Formulario de Información Personal */}
-        <div className="profile-form-column card shadow-sm">
+        <Card className="profile-form-column">
           <h3 className="headline-sm form-card-title">Información Personal</h3>
           <form onSubmit={handleSave} className="md3-form">
             <div className="form-fields-row">
               <div className="form-field-group flex-1">
                 <label className="label-sm uppercase">Nombre</label>
-                <input 
-                  type="text" 
-                  value={firstName} 
-                  onChange={(e) => setFirstName(e.target.value)}
+                <input
+                  type="text"
+                  value={profile.firstName}
+                  onChange={(e) => setField('firstName', e.target.value)}
                   className="md3-input"
                   required
                 />
               </div>
               <div className="form-field-group flex-1">
                 <label className="label-sm uppercase">Apellido</label>
-                <input 
-                  type="text" 
-                  value={lastName} 
-                  onChange={(e) => setLastName(e.target.value)}
+                <input
+                  type="text"
+                  value={profile.lastName}
+                  onChange={(e) => setField('lastName', e.target.value)}
                   className="md3-input"
                   required
                 />
@@ -153,10 +130,10 @@ export default function Profile() {
               <label className="label-sm uppercase">Correo Electrónico</label>
               <div className="input-with-icon">
                 <span className="material-symbols-outlined input-icon">mail</span>
-                <input 
-                  type="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)}
+                <input
+                  type="email"
+                  value={profile.email}
+                  onChange={(e) => setField('email', e.target.value)}
                   className="md3-input pl-xl"
                   required
                 />
@@ -165,10 +142,10 @@ export default function Profile() {
 
             <div className="form-field-group">
               <label className="label-sm uppercase">Puesto de Trabajo</label>
-              <input 
-                type="text" 
-                value={jobTitle} 
-                onChange={(e) => setJobTitle(e.target.value)}
+              <input
+                type="text"
+                value={profile.jobTitle}
+                onChange={(e) => setField('jobTitle', e.target.value)}
                 className="md3-input"
                 required
               />
@@ -176,24 +153,24 @@ export default function Profile() {
 
             <div className="form-field-group">
               <label className="label-sm uppercase">Biografía</label>
-              <textarea 
+              <textarea
                 rows={4}
-                value={bio} 
-                onChange={(e) => setBio(e.target.value)}
+                value={profile.bio}
+                onChange={(e) => setField('bio', e.target.value)}
                 className="md3-textarea"
               />
             </div>
 
             <div className="form-btn-actions mt-lg">
-              <button type="button" onClick={handleCancel} className="md3-btn md3-btn-outlined">
+              <Button variant="outlined" onClick={handleCancel}>
                 Cancelar
-              </button>
-              <button type="submit" className="md3-btn md3-btn-filled">
+              </Button>
+              <Button variant="filled" type="submit">
                 Guardar Cambios
-              </button>
+              </Button>
             </div>
           </form>
-        </div>
+        </Card>
       </div>
     </div>
   );

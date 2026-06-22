@@ -1,3 +1,4 @@
+import ThemeToggle from '../../atoms/ThemeToggle/ThemeToggle';
 import './Header.css';
 
 interface HeaderProps {
@@ -7,14 +8,17 @@ interface HeaderProps {
 export default function Header({ toggleSidebar }: HeaderProps) {
   return (
     <header className="header">
-      <button 
-        className="mobile-menu-toggle" 
+      <button
+        className="mobile-menu-toggle"
         onClick={toggleSidebar}
         aria-label="Abrir navegación"
       >
         <span className="material-symbols-outlined">menu</span>
       </button>
       <h1 className="header-title">Panel de Control</h1>
+      <div className="header-actions">
+        <ThemeToggle />
+      </div>
     </header>
   );
 }

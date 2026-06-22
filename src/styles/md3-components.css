@@ -1,0 +1,473 @@
+/* ============================================================================
+   md3-components.css
+   Authoritative, shared MD3 component styles. Imported once from main.tsx.
+   Pages must NOT redeclare these classes.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   Shared motion: page enter animation
+   ------------------------------------------------------------------------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------------------------------------------------------------------------
+   Card (MD3 Outlined Card spec — elevation via tokens)
+   ------------------------------------------------------------------------- */
+.card {
+  background-color: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-lg);
+  padding: var(--md-sys-spacing-6);
+  text-align: left;
+  box-sizing: border-box;
+  transition: box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              border-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.card.p-0 {
+  padding: 0;
+}
+
+.card.elevated {
+  background-color: var(--md-sys-color-surface-container-low);
+  border: none;
+  box-shadow: var(--md-sys-elevation-1);
+}
+
+.card.filled {
+  background-color: var(--md-sys-color-surface-container-highest);
+  border: none;
+}
+
+.shadow-sm {
+  box-shadow: var(--md-sys-elevation-1);
+}
+
+/* ---------------------------------------------------------------------------
+   Buttons (MD3 Button — base for all variants)
+   State layer + ripple handled via ::before / ::after.
+   ------------------------------------------------------------------------- */
+.md3-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--md-sys-spacing-2);
+  height: var(--md-sys-spacing-12);
+  padding: 0 var(--md-sys-spacing-6);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  box-sizing: border-box;
+  border: none;
+  font-family: var(--sans);
+  transition: box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.md3-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--md-sys-color-secondary);
+}
+
+.md3-btn:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.md3-btn .icon-btn {
+  font-size: 18px;
+}
+
+/* MD3 Filled Button */
+.md3-btn-filled {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  box-shadow: var(--md-sys-elevation-0);
+}
+
+.md3-btn-filled:hover {
+  box-shadow: var(--md-sys-elevation-1);
+}
+
+/* MD3 Tonal Button */
+.md3-btn-tonal {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+/* MD3 Outlined Button */
+.md3-btn-outlined {
+  background-color: transparent;
+  color: var(--md-sys-color-primary);
+  border: 1px solid var(--md-sys-color-outline);
+}
+
+/* MD3 Text Button */
+.md3-btn-text {
+  background-color: transparent;
+  color: var(--md-sys-color-primary);
+  padding: 0 var(--md-sys-spacing-3);
+}
+
+/* MD3 Elevated Button */
+.md3-btn-elevated {
+  background-color: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-primary);
+  box-shadow: var(--md-sys-elevation-1);
+}
+
+.md3-btn-elevated:hover {
+  box-shadow: var(--md-sys-elevation-2);
+}
+
+/* MD3 Error/Danger Button */
+.md3-btn-danger {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border: 1px solid var(--md-sys-color-error);
+}
+
+.md3-btn-danger:hover {
+  background-color: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+}
+
+/* --- State layer (hover/focus/pressed) shared by all variants --- */
+.md3-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  opacity: 0;
+  border-radius: inherit;
+  transition: opacity var(--md-sys-motion-duration-short2) linear;
+  z-index: 0;
+}
+
+.md3-btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+.md3-btn:not(:disabled):hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.md3-btn:not(:disabled):focus-visible::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.md3-btn:not(:disabled):active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* Disabled states per variant */
+.md3-btn-filled:disabled,
+.md3-btn-tonal:disabled,
+.md3-btn-elevated:disabled {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  box-shadow: none;
+}
+
+.md3-btn-outlined:disabled,
+.md3-btn-text:disabled {
+  background-color: transparent;
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+}
+
+/* Small button size */
+.btn-sm {
+  height: 36px;
+  padding: 0 var(--md-sys-spacing-3);
+  font-size: var(--md-sys-typescale-label-medium-size);
+  gap: var(--md-sys-spacing-1);
+}
+
+.btn-sm .icon-btn {
+  font-size: 16px;
+}
+
+/* Icon used inside buttons */
+.md3-btn .icon-btn,
+.icon-btn {
+  font-size: 18px;
+}
+
+/* ---------------------------------------------------------------------------
+   Icon Button (MD3 IconButton standard)
+   ------------------------------------------------------------------------- */
+.md3-icon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  color: var(--md-sys-color-on-surface-variant);
+  background-color: transparent;
+  font-family: var(--sans);
+  transition: box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.md3-icon-btn span {
+  font-size: 22px;
+  position: relative;
+  z-index: 1;
+}
+
+.md3-icon-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--md-sys-color-secondary);
+}
+
+.md3-icon-btn:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+}
+
+.md3-icon-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  opacity: 0;
+  border-radius: inherit;
+  transition: opacity var(--md-sys-motion-duration-short2) linear;
+  z-index: 0;
+}
+
+.md3-icon-btn:not(:disabled):hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.md3-icon-btn:not(:disabled):focus-visible::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.md3-icon-btn:not(:disabled):active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+.md3-icon-btn.filled {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.md3-icon-btn.tonal {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.md3-icon-btn.outlined {
+  border: 1px solid var(--md-sys-color-outline);
+}
+
+/* ---------------------------------------------------------------------------
+   Text Field (MD3 Outlined Text Field)
+   ------------------------------------------------------------------------- */
+.md3-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-6);
+}
+
+.form-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-2);
+}
+
+.form-field-group label {
+  font-size: var(--md-sys-typescale-label-medium-size);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--md-sys-color-on-surface-variant);
+  padding-left: var(--md-sys-spacing-1);
+}
+
+.md3-input,
+.md3-textarea {
+  padding: 14px var(--md-sys-spacing-4);
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-xs);
+  font-size: var(--md-sys-typescale-body-large-size);
+  background-color: var(--md-sys-color-surface-container-lowest);
+  color: var(--md-sys-color-on-surface);
+  outline: none;
+  font-family: var(--sans);
+  box-sizing: border-box;
+  transition: border-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+              box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+              background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.md3-textarea {
+  border-radius: var(--md-sys-shape-corner-sm);
+  resize: vertical;
+  min-height: 96px;
+}
+
+.md3-input::placeholder,
+.md3-textarea::placeholder {
+  color: var(--md-sys-color-outline-variant);
+}
+
+.md3-input:hover,
+.md3-textarea:hover {
+  border-color: var(--md-sys-color-on-surface);
+}
+
+.md3-input:focus,
+.md3-textarea:focus {
+  border-color: var(--md-sys-color-primary);
+  border-width: 2px;
+  padding: 13px 15px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent);
+}
+
+.md3-input:disabled,
+.md3-textarea:disabled {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 4%, transparent);
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+  cursor: not-allowed;
+}
+
+/* Error state */
+.md3-input.is-error,
+.md3-textarea.is-error {
+  border-color: var(--md-sys-color-error);
+}
+
+.md3-input.is-error:focus,
+.md3-textarea.is-error:focus {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--md-sys-color-error) 12%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   Form action bar
+   ------------------------------------------------------------------------- */
+.form-btn-actions {
+  display: flex;
+  gap: var(--md-sys-spacing-3);
+  justify-content: flex-end;
+  margin-top: var(--md-sys-spacing-4);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+  padding-top: var(--md-sys-spacing-6);
+}
+
+/* ---------------------------------------------------------------------------
+   Breadcrumbs
+   ------------------------------------------------------------------------- */
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-2);
+  font-size: var(--md-sys-typescale-body-medium-size);
+}
+
+.breadcrumb-link {
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.breadcrumb-link:hover {
+  opacity: 0.8;
+}
+
+.breadcrumb-separator {
+  font-size: var(--md-sys-typescale-title-medium-size);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.breadcrumb-current {
+  color: var(--md-sys-color-on-surface);
+  font-weight: 500;
+}
+
+/* ---------------------------------------------------------------------------
+   Status badges / Assist chips (MD3 Assist Chip shape)
+   ------------------------------------------------------------------------- */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 var(--md-sys-spacing-3);
+  border-radius: var(--md-sys-shape-corner-sm);
+  font-size: var(--md-sys-typescale-label-medium-size);
+  font-weight: 600;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+}
+
+.badge-success {
+  background-color: var(--md-sys-color-success-container);
+  color: var(--md-sys-color-success);
+  border-color: color-mix(in srgb, var(--md-sys-color-success) 20%, transparent);
+}
+
+.badge-warning {
+  background-color: var(--md-sys-color-warning-container);
+  color: var(--md-sys-color-warning);
+  border-color: color-mix(in srgb, var(--md-sys-color-warning) 20%, transparent);
+}
+
+.badge-danger {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border-color: color-mix(in srgb, var(--md-sys-color-error) 20%, transparent);
+}
+
+.badge-neutral {
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* ---------------------------------------------------------------------------
+   Color / layout utility helpers
+   ------------------------------------------------------------------------- */
+.w-full { width: 100%; }
+.flex-1 { flex: 1; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.min-h-200 { min-height: 200px; }
+.text-right { text-align: right !important; }
+.text-center { text-align: center; }
+.line-through { text-decoration: line-through; opacity: 0.6; }
+.font-semibold { font-weight: 600; }
+.font-medium { font-weight: 500; }
+.uppercase { text-transform: uppercase; }
+.p-0 { padding: 0; }
+.pl-xl { padding-left: var(--md-sys-spacing-6); }
+.mt-lg { margin-top: var(--md-sys-spacing-8); }
+.mt-xs { margin-top: var(--md-sys-spacing-1); }
+.mb-sm { margin-bottom: var(--md-sys-spacing-2); }
+.mt-1 { margin-top: var(--md-sys-spacing-1); }
+
+.primary-text { color: var(--md-sys-color-primary); }
+.primary-text-color { color: var(--md-sys-color-primary); }
+.text-on-surface { color: var(--md-sys-color-on-surface); }
+.error-text { color: var(--md-sys-color-error); }
+.success-text { color: var(--md-sys-color-success); }
+.bg-container-low {
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px dashed var(--md-sys-color-outline-variant);
+}

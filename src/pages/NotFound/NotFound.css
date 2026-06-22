@@ -1,9 +1,11 @@
+/* NotFound — page-specific styles only. */
+
 .not-found-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 24px;
+  padding: 80px var(--md-sys-spacing-6);
   text-align: center;
   flex-grow: 1;
   animation: fadeIn 0.4s ease-out;
@@ -21,14 +23,14 @@
 .not-found-container h2 {
   font-size: 26px;
   font-weight: 700;
-  margin: 16px 0 16px;
+  margin: var(--md-sys-spacing-4) 0 var(--md-sys-spacing-4);
   color: var(--md-sys-color-on-surface);
   letter-spacing: -0.01em;
 }
 
 .not-found-container p {
   max-width: 500px;
-  margin: 0 auto 32px;
+  margin: 0 auto var(--md-sys-spacing-8);
   font-size: 15px;
   line-height: 1.6;
   color: var(--md-sys-color-on-surface-variant);
@@ -38,22 +40,40 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 48px;
-  padding: 0 32px;
+  height: var(--md-sys-spacing-12);
+  padding: 0 var(--md-sys-spacing-8);
   background-color: var(--md-sys-color-primary);
   color: var(--md-sys-color-on-primary);
   text-decoration: none;
   font-weight: 600;
   border-radius: var(--md-sys-shape-corner-full);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-  transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+  box-shadow: var(--md-sys-elevation-1);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.not-found-container .home-link::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  opacity: 0;
+  border-radius: inherit;
+  transition: opacity var(--md-sys-motion-duration-short2) linear;
+  z-index: 0;
+}
+
+.not-found-container .home-link:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
 }
 
 .not-found-container .home-link:hover {
-  background-color: #0b57d0e0;
-  box-shadow: 0 2px 6px rgba(11, 87, 208, 0.2);
+  box-shadow: var(--md-sys-elevation-2);
 }
 
-.not-found-container .home-link:active {
-  transform: scale(0.97);
+.not-found-container .home-link > * {
+  position: relative;
+  z-index: 1;
 }

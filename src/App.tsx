@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { createBrowserRouter, RouterProvider, Outlet, Navigate } from 'react-router-dom';
+import { DialogProvider } from './components/molecules/Dialog/DialogProvider';
+import { SnackbarProvider } from './components/molecules/Snackbar/Snackbar';
 import Home from './pages/Home/Home';
 import ProductsList from './pages/Products/ProductsList/ProductsList';
 import ProductView from './pages/Products/ProductView/ProductView';
@@ -25,8 +27,8 @@ function Layout() {
   return (
     <div className="dashboard-layout">
       {/* Mobile Drawer Overlay backdrop */}
-      <div 
-        className={`sidebar-overlay ${isSidebarOpen ? 'show' : ''}`} 
+      <div
+        className={`sidebar-overlay ${isSidebarOpen ? 'show' : ''}`}
         onClick={closeSidebar}
         aria-hidden="true"
       ></div>
@@ -97,6 +99,11 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <DialogProvider>
+      <SnackbarProvider>
+        <RouterProvider router={router} />
+      </SnackbarProvider>
+    </DialogProvider>
+  );
 }
-

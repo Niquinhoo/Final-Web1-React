@@ -1,0 +1,8 @@
+.md3-icon {
+  line-height: 1;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: font-variation-settings var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}

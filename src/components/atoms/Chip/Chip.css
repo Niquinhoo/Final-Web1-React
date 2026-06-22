@@ -1,0 +1,103 @@
+.md3-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-2);
+  height: 32px;
+  padding: 0 var(--md-sys-spacing-3);
+  border-radius: var(--md-sys-shape-corner-sm);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background-color: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: 500;
+  font-family: var(--sans);
+  user-select: none;
+  overflow: hidden;
+  isolation: isolate;
+  box-sizing: border-box;
+}
+
+.md3-chip__icon,
+.md3-chip__check {
+  font-size: 18px;
+  position: relative;
+  z-index: 1;
+}
+
+.md3-chip__label {
+  position: relative;
+  z-index: 1;
+}
+
+/* Interactive state layer */
+.md3-chip.is-interactive {
+  cursor: pointer;
+}
+
+.md3-chip.is-interactive::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  opacity: 0;
+  border-radius: inherit;
+  transition: opacity var(--md-sys-motion-duration-short2) linear;
+  z-index: 0;
+}
+
+.md3-chip.is-interactive:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.md3-chip.is-interactive:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+.md3-chip .md3-ripple {
+  position: absolute;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: currentColor;
+  opacity: 0.12;
+  transform: scale(0);
+  animation: md3-ripple 600ms var(--md-sys-motion-easing-standard);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Color variants */
+.md3-chip--primary {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  border-color: transparent;
+}
+
+.md3-chip--success {
+  background-color: var(--md-sys-color-success-container);
+  color: var(--md-sys-color-success);
+  border-color: color-mix(in srgb, var(--md-sys-color-success) 20%, transparent);
+}
+
+.md3-chip--warning {
+  background-color: var(--md-sys-color-warning-container);
+  color: var(--md-sys-color-warning);
+  border-color: color-mix(in srgb, var(--md-sys-color-warning) 20%, transparent);
+}
+
+.md3-chip--danger {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border-color: color-mix(in srgb, var(--md-sys-color-error) 20%, transparent);
+}
+
+/* Filter chip selected state */
+.md3-chip--filter.is-selected {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  border-color: transparent;
+}
+
+.md3-chip.is-disabled {
+  opacity: 0.38;
+  pointer-events: none;
+}

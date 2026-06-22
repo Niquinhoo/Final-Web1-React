@@ -1,0 +1,11 @@
+/* Ripple reuses the shared keyframe from md3-components.css */
+.md3-icon-btn .md3-ripple {
+  position: absolute;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: currentColor;
+  opacity: 0.12;
+  transform: scale(0);
+  animation: md3-ripple 600ms var(--md-sys-motion-easing-standard);
+  pointer-events: none;
+  z-index: 0;
+}

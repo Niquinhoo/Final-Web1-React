@@ -1,0 +1,53 @@
+.md3-snackbar {
+  position: fixed;
+  bottom: var(--md-sys-spacing-6);
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-4);
+  padding: var(--md-sys-spacing-3) var(--md-sys-spacing-4);
+  background-color: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  border-radius: var(--md-sys-shape-corner-xs);
+  box-shadow: var(--md-sys-elevation-3);
+  min-width: min(480px, 90vw);
+  max-width: 90vw;
+  z-index: 1100;
+  animation: md3-snackbar-in var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized);
+}
+
+.md3-snackbar__message {
+  flex: 1;
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: var(--md-sys-typescale-body-medium-line);
+}
+
+.md3-snackbar__action {
+  background: none;
+  border: none;
+  color: var(--md-sys-color-inverse-primary);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: 600;
+  font-family: var(--sans);
+  padding: var(--md-sys-spacing-2);
+  cursor: pointer;
+  border-radius: var(--md-sys-shape-corner-xs);
+  transition: background-color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+  white-space: nowrap;
+}
+
+.md3-snackbar__action:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-inverse-primary) 12%, transparent);
+}
+
+@keyframes md3-snackbar-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}

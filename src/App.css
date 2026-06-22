@@ -11,10 +11,10 @@
   display: none;
   position: fixed;
   inset: 0;
-  background-color: rgba(31, 31, 31, 0.4); /* MD3 translucent overlay scrim */
+  background-color: color-mix(in srgb, var(--md-sys-color-scrim) 40%, transparent);
   z-index: 99;
   opacity: 0;
-  transition: opacity 0.3s cubic-bezier(0.2, 0, 0, 1);
+  transition: opacity var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
   pointer-events: none;
 }
 
@@ -45,7 +45,7 @@
 
 @media (max-width: 480px) {
   .content {
-    padding: 16px;
+    padding: var(--md-sys-spacing-4);
   }
 }
 

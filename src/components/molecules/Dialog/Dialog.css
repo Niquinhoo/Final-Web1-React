@@ -1,0 +1,59 @@
+.md3-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: color-mix(in srgb, var(--md-sys-color-scrim) 40%, transparent);
+  z-index: 1000;
+  animation: md3-dialog-overlay-in var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+}
+
+.md3-dialog {
+  background-color: var(--md-sys-color-surface-container-high);
+  border-radius: var(--md-sys-shape-corner-xl);
+  padding: var(--md-sys-spacing-6);
+  min-width: min(560px, 90vw);
+  max-width: 90vw;
+  box-shadow: var(--md-sys-elevation-3);
+  text-align: left;
+  outline: none;
+  animation: md3-dialog-in var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized);
+}
+
+.md3-dialog__title {
+  font-size: var(--md-sys-typescale-headline-sm-size);
+  font-weight: 600;
+  line-height: var(--md-sys-typescale-headline-sm-line);
+  color: var(--md-sys-color-on-surface);
+  margin: 0 0 var(--md-sys-spacing-4) 0;
+}
+
+.md3-dialog__content {
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: var(--md-sys-typescale-body-medium-line);
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: var(--md-sys-spacing-6);
+}
+
+.md3-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--md-sys-spacing-2);
+}
+
+@keyframes md3-dialog-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes md3-dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
