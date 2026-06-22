@@ -2,6 +2,7 @@
 // Funciones auxiliares para consumir la API REST del backend
 
 export const API_BASE_URL = 'http://localhost:3000/api';
+export const BACKEND_URL = 'http://localhost:3000';
 
 /**
  * Realiza una petición fetch a la API del backend
@@ -9,12 +10,17 @@ export const API_BASE_URL = 'http://localhost:3000/api';
  * @param options Opciones adicionales para fetch (método, body, headers)
  */
 export async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {};
+  if (!(options?.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options?.headers || {}),
-    },
     ...options,
+    headers: {
+      ...headers,
+      ...(options?.headers as Record<string, string> || {}),
+    },
   });
 
   if (!response.ok) {

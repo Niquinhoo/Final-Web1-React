@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { apiFetch } from '../../../utils/api';
+import { apiFetch, BACKEND_URL } from '../../../utils/api';
 import './ProductView.css';
 
 interface ProductData {
@@ -26,6 +26,37 @@ export default function ProductView() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Electrónica');
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const getProductImageUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `${BACKEND_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      setUploadingImage(true);
+      const data = await apiFetch<{ url: string }>('/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (data && data.url) {
+        setImage(data.url);
+      }
+    } catch (error) {
+      console.error('Error al subir imagen:', error);
+      alert('Error al subir la imagen al servidor backend.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   useEffect(() => {
     if (!isEditMode) {
@@ -148,7 +179,7 @@ export default function ProductView() {
           <h3 className="headline-sm">Vista Previa</h3>
           <div className="preview-image-box">
             {image ? (
-              <img src={image} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
+              <img src={getProductImageUrl(image)} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
             ) : (
               <>
                 <span className="material-symbols-outlined placeholder-image-icon">image</span>
@@ -273,16 +304,30 @@ export default function ProductView() {
             </div>
 
             <div className="form-field-group">
-              <label htmlFor="prod-image" className="label-sm uppercase">URL de Imagen</label>
-              <input 
-                type="text" 
-                id="prod-image" 
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                placeholder="https://ejemplo.com/imagen.jpg" 
-                className="md3-input"
-                disabled={loading}
-              />
+              <label htmlFor="prod-image" className="label-sm uppercase">Imagen del Producto</label>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '8px' }}>
+                <input 
+                  type="text" 
+                  id="prod-image" 
+                  value={image}
+                  onChange={(e) => setImage(e.target.value)}
+                  placeholder="https://ejemplo.com/imagen.jpg o sube un archivo" 
+                  className="md3-input"
+                  style={{ flex: 1, margin: 0 }}
+                  disabled={loading || uploadingImage}
+                />
+                <label className="md3-btn md3-btn-outlined" style={{ height: '48px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', margin: 0, whiteSpace: 'nowrap' }}>
+                  <span className="material-symbols-outlined icon-btn" style={{ marginRight: '8px' }}>upload</span>
+                  {uploadingImage ? 'Subiendo...' : 'Subir Imagen'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }}
+                    disabled={loading || uploadingImage}
+                  />
+                </label>
+              </div>
             </div>
 
             <div className="form-field-group">
