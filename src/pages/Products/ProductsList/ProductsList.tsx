@@ -140,7 +140,7 @@ export default function ProductsList() {
     if (!confirmed) return;
 
     try {
-      await apiFetch(`/products/${id}/delete`, {
+      await apiFetch(`/products/${id}`, {
         method: 'DELETE',
       });
       setProducts(prev => prev.filter(p => p.id !== id));

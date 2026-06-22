@@ -139,7 +139,7 @@ export default function ProductView() {
     };
 
     try {
-      const endpoint = isEditMode ? `/products/${id}/edit` : '/products/new';
+      const endpoint = isEditMode ? `/products/${id}` : '/products';
       const method = isEditMode ? 'PUT' : 'POST';
 
       await apiFetch<ProductData>(endpoint, {
@@ -171,7 +171,7 @@ export default function ProductView() {
 
     setLoading(true);
     try {
-      await apiFetch(`/products/${id}/delete`, {
+      await apiFetch(`/products/${id}`, {
         method: 'DELETE',
       });
       snackbar.show('Producto eliminado correctamente.');
