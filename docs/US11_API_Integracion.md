@@ -1,5 +1,7 @@
 # Documentación de Diseño — Integración de API REST y SQLite Backend
 
+> Estado histórico: esta documentación describe la etapa donde React consumía Express en `localhost:3000`. La entrega actual funciona React-only con persistencia local. Ver `docs/US12_Persistencia_Local_Auth_Admin.md`.
+
 Esta documentación detalla la integración del backend en Express y SQLite ([Web-1](file:///c:/Users/nicot/Desktop/Web-1)) con el panel de administración en React ([reactfinal](file:///c:/Users/nicot/Desktop/reactfinal)) correspondiente al Sprint 5, facilitando operaciones CRUD sincrónicas y la actualización del inventario de productos.
 
 ---

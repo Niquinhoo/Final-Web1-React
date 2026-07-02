@@ -33,9 +33,9 @@ export default function CategoryView() {
         if (category) {
           setName(category.name || '');
           setIcon(category.icon || 'folder');
-        }
-      } catch (error) {
-        console.warn(`Error al cargar la categoría #${id} de la API.`, error);
+      }
+    } catch (error) {
+      console.warn(`Error al cargar la categoría #${id}.`, error);
       } finally {
         setLoading(false);
       }
@@ -63,11 +63,10 @@ export default function CategoryView() {
       });
 
       snackbar.show(isEditMode ? 'Categoría actualizada correctamente.' : 'Categoría creada correctamente.');
-      navigate('/categories');
+      navigate('/admin/categories');
     } catch (error) {
-      console.error('Error al guardar la categoría en el backend:', error);
-      snackbar.show('Se simuló el guardado con éxito (API del backend no conectada).');
-      navigate('/categories');
+      console.error('Error al guardar la categoría localmente:', error);
+      snackbar.show('No se pudo guardar la categoría.');
     } finally {
       setLoading(false);
     }
@@ -90,11 +89,10 @@ export default function CategoryView() {
         method: 'DELETE',
       });
       snackbar.show('Categoría eliminada correctamente.');
-      navigate('/categories');
+      navigate('/admin/categories');
     } catch (error) {
-      console.error('Error al eliminar la categoría del backend:', error);
-      snackbar.show('Se simuló la eliminación con éxito (API del backend no conectada).');
-      navigate('/categories');
+      console.error('Error al eliminar la categoría localmente:', error);
+      snackbar.show('No se pudo eliminar la categoría.');
     } finally {
       setLoading(false);
     }
@@ -104,7 +102,7 @@ export default function CategoryView() {
     <div className="category-view-canvas">
       <div className="category-view-header-section">
         <div className="breadcrumbs font-body-sm text-secondary-color">
-          <Link to="/categories" className="breadcrumb-link">Categorías</Link>
+          <Link to="/admin/categories" className="breadcrumb-link">Categorías</Link>
           <span className="material-symbols-outlined breadcrumb-separator">chevron_right</span>
           <span className="breadcrumb-current">{isEditMode ? `Detalle #${id}` : 'Nueva Categoría'}</span>
         </div>
@@ -147,7 +145,7 @@ export default function CategoryView() {
             </div>
 
             <div className="form-btn-actions">
-              <Link to="/categories" className="md3-btn md3-btn-outlined" style={{ height: '48px', lineHeight: '48px', display: 'flex', alignItems: 'center' }}>
+              <Link to="/admin/categories" className="md3-btn md3-btn-outlined" style={{ height: '48px', lineHeight: '48px', display: 'flex', alignItems: 'center' }}>
                 Cancelar
               </Link>
               <button type="submit" className="md3-btn md3-btn-filled" disabled={loading}>

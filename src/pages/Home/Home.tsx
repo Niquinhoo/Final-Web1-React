@@ -46,7 +46,6 @@ export default function Home() {
   const [totalProducts, setTotalProducts] = useState<number>(0);
   const [totalCategories, setTotalCategories] = useState<number>(0);
   const [lowStock, setLowStock] = useState<number>(0);
-  const [recentSales] = useState<string>('$0.00');
   const [activities] = useState<Activity[]>([]);
   const [username] = useState<string>(getStoredUsername);
 
@@ -60,7 +59,7 @@ export default function Home() {
           setLowStock(lowStockCount);
         }
       } catch (error) {
-        console.warn('No se pudo conectar al backend para cargar productos.', error);
+        console.warn('No se pudieron cargar productos locales.', error);
       }
 
       try {
@@ -69,7 +68,7 @@ export default function Home() {
           setTotalCategories(categoriesList.length);
         }
       } catch (error) {
-        console.warn('No se pudo conectar al backend para cargar categorías.', error);
+        console.warn('No se pudieron cargar categorías locales.', error);
       }
     }
 
@@ -90,17 +89,12 @@ export default function Home() {
             <span className="material-symbols-outlined stat-icon primary-icon">inventory_2</span>
           </div>
           <div className="stat-value">{totalProducts.toLocaleString()}</div>
-          <div className="stat-trend">
-            <span className="material-symbols-outlined trend-arrow primary-text">arrow_upward</span>
-            <span className="trend-percentage primary-text">+2.4%</span>
-            <span className="trend-label text-secondary-color">desde el mes pasado</span>
-          </div>
           <div className="stat-actions">
-            <Link to="/products" className="md3-btn md3-btn-outlined btn-sm flex-1">
+            <Link to="/admin/products" className="md3-btn md3-btn-outlined btn-sm flex-1">
               <span className="material-symbols-outlined icon-btn">list</span>
               Ver Listado
             </Link>
-            <Link to="/products/new" className="md3-btn md3-btn-filled btn-sm flex-1">
+            <Link to="/admin/products/new" className="md3-btn md3-btn-filled btn-sm flex-1">
               <span className="material-symbols-outlined icon-btn">add</span>
               Agregar Producto
             </Link>
@@ -113,46 +107,30 @@ export default function Home() {
             <span className="material-symbols-outlined stat-icon primary-icon">category</span>
           </div>
           <div className="stat-value">{totalCategories}</div>
-          <div className="stat-trend">
-            <span className="trend-label text-secondary-color">Activas en múltiples departamentos</span>
-          </div>
           <div className="stat-actions">
-            <Link to="/categories" className="md3-btn md3-btn-outlined btn-sm flex-1">
+            <Link to="/admin/categories" className="md3-btn md3-btn-outlined btn-sm flex-1">
               <span className="material-symbols-outlined icon-btn">list</span>
               Ver Listado
             </Link>
-            <Link to="/categories/new" className="md3-btn md3-btn-filled btn-sm flex-1">
+            <Link to="/admin/categories/new" className="md3-btn md3-btn-filled btn-sm flex-1">
               <span className="material-symbols-outlined icon-btn">add</span>
               Agregar Categoría
             </Link>
           </div>
         </Card>
 
-        <Card interactive className="stat-card border-error">
-          <div className="stat-card-header">
-            <span className="label-md text-secondary-color uppercase">Stock Bajo</span>
-            <span className="material-symbols-outlined stat-icon error-icon">warning</span>
-          </div>
-          <div className="stat-value">{lowStock}</div>
-          <div className="stat-trend">
-            <span className="material-symbols-outlined trend-arrow error-text">arrow_upward</span>
-            <span className="trend-percentage error-text">+{lowStock}</span>
-            <span className="trend-label text-secondary-color">requieren reabastecimiento</span>
-          </div>
-        </Card>
-
-        <Card interactive className="stat-card">
-          <div className="stat-card-header">
-            <span className="label-md text-secondary-color uppercase">Ventas Recientes (30d)</span>
-            <span className="material-symbols-outlined stat-icon primary-icon">payments</span>
-          </div>
-          <div className="stat-value">{recentSales}</div>
-          <div className="stat-trend">
-            <span className="material-symbols-outlined trend-arrow primary-text">arrow_upward</span>
-            <span className="trend-percentage primary-text">+8.1%</span>
-            <span className="trend-label text-secondary-color">vs período anterior</span>
-          </div>
-        </Card>
+        <Link to="/admin/products?filter=low-stock" style={{ textDecoration: 'none', color: 'inherit', display: 'flex' }} className="flex-1">
+          <Card interactive className={`stat-card ${lowStock > 0 ? 'low-stock-alert' : ''}`} style={{ justifyContent: 'center', width: '100%', height: '100%' }}>
+            <div className="stat-card-header">
+              <span className="label-md text-secondary-color uppercase">Stock Bajo</span>
+              <span className="material-symbols-outlined stat-icon error-icon">warning</span>
+            </div>
+            <div className="stat-value">{lowStock}</div>
+            <div className="stat-label body-sm text-secondary-color" style={{ marginTop: '8px' }}>
+              {lowStock > 0 ? '¡Productos requieren reabastecimiento urgente!' : 'Inventario en niveles óptimos'}
+            </div>
+          </Card>
+        </Link>
       </div>
 
       <div className="home-split-layout">

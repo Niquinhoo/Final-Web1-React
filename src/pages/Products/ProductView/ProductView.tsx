@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { apiFetch, BACKEND_URL } from '../../../utils/api';
+import { apiFetch } from '../../../utils/api';
 import { Button, IconButton, Card } from '../../../components/atoms';
 import { useDialog, useSnackbar } from '../../../components/molecules';
 import './ProductView.css';
@@ -35,8 +35,8 @@ export default function ProductView() {
 
   const getProductImageUrl = (url: string) => {
     if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `${BACKEND_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+    if (/^(https?:|data:|blob:|\/)/.test(url)) return url;
+    return `/${url}`;
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +57,7 @@ export default function ProductView() {
       }
     } catch (error) {
       console.error('Error al subir imagen:', error);
-      snackbar.show('Error al subir la imagen al servidor backend.');
+      snackbar.show('Error al guardar la imagen localmente.');
     } finally {
       setUploadingImage(false);
     }
@@ -148,11 +148,10 @@ export default function ProductView() {
       });
 
       snackbar.show(isEditMode ? 'Producto actualizado correctamente.' : 'Producto creado correctamente.');
-      navigate('/products');
+      navigate('/admin/products');
     } catch (error) {
-      console.error('Error al guardar el producto en el backend:', error);
-      snackbar.show('Se guardaron los datos con éxito.');
-      navigate('/products');
+      console.error('Error al guardar el producto localmente:', error);
+      snackbar.show('No se pudo guardar el producto.');
     } finally {
       setLoading(false);
     }
@@ -175,11 +174,10 @@ export default function ProductView() {
         method: 'DELETE',
       });
       snackbar.show('Producto eliminado correctamente.');
-      navigate('/products');
+      navigate('/admin/products');
     } catch (error) {
-      console.error('Error al eliminar el producto del backend:', error);
-      snackbar.show('Se eliminó el producto con éxito.');
-      navigate('/products');
+      console.error('Error al eliminar el producto localmente:', error);
+      snackbar.show('No se pudo eliminar el producto.');
     } finally {
       setLoading(false);
     }
@@ -189,7 +187,7 @@ export default function ProductView() {
     <div className="product-view-canvas">
       <div className="product-view-header-section">
         <div className="breadcrumbs font-body-sm text-secondary-color">
-          <Link to="/products" className="breadcrumb-link">Productos</Link>
+          <Link to="/admin/products" className="breadcrumb-link">Productos</Link>
           <span className="material-symbols-outlined breadcrumb-separator">chevron_right</span>
           <span className="breadcrumb-current">{isEditMode ? `#${id}` : 'Nuevo Producto'}</span>
         </div>

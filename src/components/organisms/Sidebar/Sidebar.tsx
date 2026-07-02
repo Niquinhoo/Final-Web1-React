@@ -14,7 +14,7 @@ export default function Sidebar({ isSidebarOpen, closeSidebar }: SidebarProps) {
       </div>
       <nav className="sidebar-nav">
         <NavLink 
-          to="/home" 
+          to="/admin/dashboard" 
           className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
           onClick={closeSidebar}
         >
@@ -22,7 +22,7 @@ export default function Sidebar({ isSidebarOpen, closeSidebar }: SidebarProps) {
           <span className="nav-label">Inicio</span>
         </NavLink>
         <NavLink 
-          to="/products" 
+          to="/admin/products" 
           className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
           onClick={closeSidebar}
         >
@@ -30,7 +30,7 @@ export default function Sidebar({ isSidebarOpen, closeSidebar }: SidebarProps) {
           <span className="nav-label">Productos</span>
         </NavLink>
         <NavLink 
-          to="/categories" 
+          to="/admin/categories" 
           className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
           onClick={closeSidebar}
         >
@@ -38,7 +38,7 @@ export default function Sidebar({ isSidebarOpen, closeSidebar }: SidebarProps) {
           <span className="nav-label">Categorías</span>
         </NavLink>
         <NavLink 
-          to="/profile" 
+          to="/admin/profile" 
           className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
           onClick={closeSidebar}
         >

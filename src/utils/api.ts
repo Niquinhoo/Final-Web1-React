@@ -1,36 +1,122 @@
-// utils/api.ts
-// Funciones auxiliares para consumir la API REST del backend
+import {
+  createCategory,
+  createProduct,
+  deleteCategory,
+  deleteProduct,
+  ensureStore,
+  getAllCategories,
+  getProductById,
+  getProductsSortedByPrice,
+  searchProductsByName,
+  updateCategory,
+  updateProduct,
+  getCategoryById,
+} from './store';
+import type { Category, Product } from './store';
 
-export const API_BASE_URL = 'http://localhost:3000/api';
-export const BACKEND_URL = 'http://localhost:3000';
+export const API_BASE_URL = 'local://pediloo';
+
+type JsonRecord = Record<string, unknown>;
+
+function readBody(options?: RequestInit): JsonRecord {
+  if (!options?.body || typeof options.body !== 'string') return {};
+
+  try {
+    return JSON.parse(options.body) as JsonRecord;
+  } catch {
+    return {};
+  }
+}
+
+function notFound(resource: string): never {
+  throw new Error(`${resource} no encontrado.`);
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadImage(options?: RequestInit): Promise<{ url: string }> {
+  if (!(options?.body instanceof FormData)) return { url: '' };
+
+  const file = options.body.get('image');
+  if (!(file instanceof File)) return { url: '' };
+
+  return { url: await fileToDataUrl(file) };
+}
+
+function getProducts(url: URL): Product[] {
+  const query = url.searchParams.get('q');
+  const sort = url.searchParams.get('sort');
+
+  if (query && query.trim()) return searchProductsByName(query);
+  return getProductsSortedByPrice(sort);
+}
+
+function normalizeProductPayload(body: JsonRecord): Partial<Product> {
+  const src = typeof body.src === 'string' ? body.src : typeof body.image === 'string' ? body.image : undefined;
+
+  return {
+    title: typeof body.title === 'string' ? body.title : undefined,
+    description: typeof body.description === 'string' ? body.description : undefined,
+    price: body.price !== undefined ? Number(body.price) : undefined,
+    src,
+    category: typeof body.category === 'string' ? body.category : undefined,
+    isTopSeller: Boolean(body.isTopSeller),
+    stock: body.stock !== undefined ? Number(body.stock) : undefined,
+    status: typeof body.status === 'string' ? body.status as Product['status'] : undefined,
+  };
+}
+
+function normalizeCategoryPayload(body: JsonRecord): Partial<Category> {
+  return {
+    name: typeof body.name === 'string' ? body.name : undefined,
+    icon: typeof body.icon === 'string' ? body.icon : undefined,
+    type: body.type === 'main' || body.type === 'other' ? body.type : undefined,
+  };
+}
 
 /**
- * Realiza una petición fetch a la API del backend
- * @param endpoint Ruta del endpoint (ej: '/products')
- * @param options Opciones adicionales para fetch (método, body, headers)
+ * Adapter local con la misma forma que la API REST original.
+ * Mantiene tienda y dashboard persistiendo dentro del navegador.
  */
 export async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const headers: Record<string, string> = {};
-  if (!(options?.body instanceof FormData)) {
-    headers['Content-Type'] = 'application/json';
+  ensureStore();
+
+  const method = (options?.method || 'GET').toUpperCase();
+  const url = new URL(endpoint, 'http://local');
+  const [, resource, id] = url.pathname.split('/');
+
+  if (resource === 'upload' && method === 'POST') {
+    return uploadImage(options) as Promise<T>;
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      ...headers,
-      ...(options?.headers as Record<string, string> || {}),
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Error en la petición API: ${response.status} ${response.statusText}`);
+  if (resource === 'products') {
+    if (method === 'GET' && !id) return getProducts(url) as T;
+    if (method === 'GET' && id) return (getProductById(id) || notFound('Producto')) as T;
+    if (method === 'POST') return createProduct(normalizeProductPayload(readBody(options))) as T;
+    if (method === 'PUT' && id) return (updateProduct(id, normalizeProductPayload(readBody(options))) || notFound('Producto')) as T;
+    if (method === 'DELETE' && id) {
+      if (!deleteProduct(id)) notFound('Producto');
+      return {} as T;
+    }
   }
 
-  // Si la respuesta es de eliminación y no tiene cuerpo, evitar llamar a response.json()
-  if (response.status === 204) {
-    return {} as T;
+  if (resource === 'categories') {
+    if (method === 'GET' && !id) return getAllCategories() as T;
+    if (method === 'GET' && id) return (getCategoryById(id) || notFound('Categoría')) as T;
+    if (method === 'POST') return createCategory(normalizeCategoryPayload(readBody(options))) as T;
+    if (method === 'PUT' && id) return (updateCategory(id, normalizeCategoryPayload(readBody(options))) || notFound('Categoría')) as T;
+    if (method === 'DELETE' && id) {
+      if (!deleteCategory(id)) notFound('Categoría');
+      return {} as T;
+    }
   }
 
-  return response.json() as Promise<T>;
+  throw new Error(`Endpoint local no implementado: ${method} ${endpoint}`);
 }

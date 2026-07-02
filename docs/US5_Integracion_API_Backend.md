@@ -1,5 +1,7 @@
 # Documentación de Diseño — User Story #5: Integración con la API Backend
 
+> Estado histórico: esta documentación describe la etapa donde el dashboard consumía Express/SQLite. La entrega actual funciona React-only con `localStorage`. Ver `docs/US12_Persistencia_Local_Auth_Admin.md`.
+
 Esta documentación detalla la transición del panel de control de **Mi Ecommerce** (Sprint 5) desde una simulación local con mocks y alertas a una conexión real y operativa con el servidor Express (`Web-1`) respaldado por una base de datos SQLite.
 
 ---
@@ -95,4 +97,3 @@ Las páginas de administración del catálogo se conectan a los siguientes endpo
 ## 🛠️ Validación y Pruebas
 * **Carga de Datos:** Al ingresar al Home, el panel calcula dinámicamente las estadísticas de cantidad de productos, total de categorías y stock crítico directamente consultando los endpoints REST, eliminando el estado mockeado.
 * **Integridad Relacional:** Los formularios de alta y modificación guardan los cambios de forma síncrona en el archivo de base de datos SQLite del backend.
-

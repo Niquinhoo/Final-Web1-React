@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { apiFetch } from '../../../utils/api';
 import { Chip, CircularProgress } from '../../../components/atoms';
 import { useDialog, useSnackbar } from '../../../components/molecules';
@@ -50,7 +50,7 @@ function ProductRowImage({ src, alt }: { src?: string; alt: string }) {
   );
 }
 
-/** Mapea los estados que vienen del backend a etiquetas en español. */
+/** Mapea los estados persistidos localmente a etiquetas en español. */
 function normalizeStatus(status: string): string {
   switch (status.toLowerCase()) {
     case 'active':
@@ -91,6 +91,10 @@ export default function ProductsList() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
 
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const filterType = searchParams.get('filter');
+
   const dialog = useDialog();
   const snackbar = useSnackbar();
 
@@ -109,7 +113,7 @@ export default function ProductsList() {
           setProducts([]);
         }
       } catch {
-        console.warn('Error al cargar productos del backend.');
+        console.warn('Error al cargar productos locales.');
         setProducts([]);
       } finally {
         setLoading(false);
@@ -146,12 +150,15 @@ export default function ProductsList() {
       setProducts(prev => prev.filter(p => p.id !== id));
       snackbar.show('Producto eliminado correctamente.');
     } catch {
-      console.warn('Error al eliminar producto del backend. Eliminando del estado local.');
+      console.warn('Error al eliminar producto local.');
       setProducts(prev => prev.filter(p => p.id !== id));
     }
   };
 
   const filteredProducts = products.filter(product => {
+    if (filterType === 'low-stock' && product.stock > 12) {
+      return false;
+    }
     const term = searchTerm.toLowerCase();
     return (
       product.title.toLowerCase().includes(term) ||
@@ -183,7 +190,7 @@ export default function ProductsList() {
               className="search-input"
             />
           </div>
-          <Link to="/products/new" className="md3-btn md3-btn-filled">
+          <Link to="/admin/products/new" className="md3-btn md3-btn-filled">
             <span className="material-symbols-outlined icon-btn">add</span>
             <span className="btn-text">Agregar Producto</span>
           </Link>
@@ -234,6 +241,18 @@ export default function ProductsList() {
         </div>
       </div>
 
+      {filterType === 'low-stock' && (
+        <div className="filter-badge-row" style={{ display: 'flex', gap: '8px', padding: '0 0 16px 8px', alignItems: 'center' }}>
+          <span className="body-sm text-secondary-color" style={{ fontSize: '13px', fontWeight: 500 }}>Filtrado por:</span>
+          <Chip 
+            label="Stock Bajo" 
+            color="warning" 
+            trailingIcon="close"
+            onClick={() => navigate('/admin/products')}
+          />
+        </div>
+      )}
+
       <div className="products-table-container card p-0">
         <div className="table-responsive">
           <table className="md3-table">
@@ -273,7 +292,7 @@ export default function ProductsList() {
                     </td>
                     <td className="text-secondary-color">#{product.id}</td>
                     <td>
-                      <Link to={`/products/${product.id}`} className="product-name-link font-semibold">
+                      <Link to={`/admin/products/${product.id}`} className="product-name-link font-semibold">
                         {product.title}
                       </Link>
                     </td>
@@ -287,7 +306,7 @@ export default function ProductsList() {
                     </td>
                     <td className="text-right">
                       <div className="table-row-actions">
-                        <Link to={`/products/${product.id}`} className="action-icon-btn" title="Editar">
+                        <Link to={`/admin/products/${product.id}`} className="action-icon-btn" title="Editar">
                           <span className="material-symbols-outlined">edit</span>
                         </Link>
                         <button

@@ -24,7 +24,7 @@ export default function CategoriesList() {
           setCategories([]);
         }
       } catch (error) {
-        console.warn('Error al cargar categorías del backend.', error);
+        console.warn('Error al cargar categorías locales.', error);
         setCategories([]);
       } finally {
         setLoading(false);
@@ -43,7 +43,7 @@ export default function CategoriesList() {
           <p className="body-sm text-secondary-color mt-1">Organiza los productos mediante departamentos y clasificaciones.</p>
         </div>
         <div className="header-actions-group">
-          <Link to="/categories/new" className="md3-btn md3-btn-filled">
+          <Link to="/admin/categories/new" className="md3-btn md3-btn-filled">
             <span className="material-symbols-outlined icon-btn">add</span>
             Nueva Categoría
           </Link>
@@ -71,7 +71,7 @@ export default function CategoriesList() {
                 <p className="body-sm text-secondary-color">ID: #{category.id}</p>
               </div>
               <div className="category-actions">
-                <Link to={`/categories/${category.id}`} className="md3-btn md3-btn-outlined btn-sm">
+                <Link to={`/admin/categories/${category.id}`} className="md3-btn md3-btn-outlined btn-sm">
                   Editar
                 </Link>
               </div>
