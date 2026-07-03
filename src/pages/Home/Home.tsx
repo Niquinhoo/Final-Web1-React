@@ -23,14 +23,19 @@ interface UserData {
   id: string | number;
 }
 
-interface Activity {
+interface OrderData {
   id: number;
-  action: string;
-  item: string;
-  user: string;
-  time: string;
-  type: 'edit' | 'add' | 'warning' | 'folder' | 'delete';
-  removed?: boolean;
+  userId: number | null;
+  discountCode?: string;
+  discountPercent: number;
+  discountAmount: number;
+  total: number;
+  createdAt: string;
+  items: Array<{
+    productId: number;
+    quantity: number;
+    price: number;
+  }>;
 }
 
 function getStoredUsername(): string {
@@ -51,7 +56,7 @@ export default function Home() {
   const [totalCategories, setTotalCategories] = useState<number>(0);
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [lowStock, setLowStock] = useState<number>(0);
-  const [activities] = useState<Activity[]>([]);
+  const [orders, setOrders] = useState<OrderData[]>([]);
   const [username] = useState<string>(getStoredUsername);
 
   useEffect(() => {
@@ -83,6 +88,15 @@ export default function Home() {
         }
       } catch (error) {
         console.warn('No se pudieron cargar usuarios locales.', error);
+      }
+
+      try {
+        const ordersList = await apiFetch<OrderData[]>('/orders');
+        if (Array.isArray(ordersList)) {
+          setOrders([...ordersList].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)).slice(0, 5));
+        }
+      } catch (error) {
+        console.warn('No se pudieron cargar órdenes locales.', error);
       }
     }
 
@@ -177,42 +191,39 @@ export default function Home() {
 
         <Card noPadding className="right-column">
           <div className="table-header">
-            <h3 className="headline-sm">Actividad Reciente</h3>
-            <button className="text-btn">Ver Todo</button>
+            <h3 className="headline-sm">Órdenes recientes</h3>
+            <Link to="/admin/orders" className="text-btn">Ver tablero</Link>
           </div>
           <div className="table-responsive">
             <table className="md3-table">
               <thead>
                 <tr>
-                  <th>Acción</th>
-                  <th>Elemento</th>
-                  <th>Usuario</th>
-                  <th className="text-right">Hora</th>
+                  <th>Orden</th>
+                  <th>Productos</th>
+                  <th>Descuento</th>
+                  <th className="text-right">Total</th>
                 </tr>
               </thead>
               <tbody>
-                {activities.length === 0 ? (
+                {orders.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="text-center text-secondary-color" style={{ padding: '24px' }}>
-                      No hay actividad reciente disponible.
+                      No hay órdenes registradas todavía.
                     </td>
                   </tr>
                 ) : (
-                  activities.map(activity => (
-                    <tr key={activity.id}>
+                  orders.map(order => (
+                    <tr key={order.id}>
                       <td className="action-cell">
-                        {activity.type === 'edit' && <span className="material-symbols-outlined action-icon primary-text">edit</span>}
-                        {activity.type === 'add' && <span className="material-symbols-outlined action-icon success-text">add_box</span>}
-                        {activity.type === 'warning' && <span className="material-symbols-outlined action-icon error-text">warning</span>}
-                        {activity.type === 'folder' && <span className="material-symbols-outlined action-icon primary-text">folder_open</span>}
-                        {activity.type === 'delete' && <span className="material-symbols-outlined action-icon error-text">delete</span>}
-                        {activity.action}
+                        <span className="material-symbols-outlined action-icon success-text">receipt_long</span>
+                        <span>
+                          <strong>#{order.id}</strong>
+                          <small>{new Date(order.createdAt).toLocaleString('es-AR')}</small>
+                        </span>
                       </td>
-                      <td className={`font-semibold text-on-surface ${activity.removed ? 'line-through text-secondary-color' : ''}`}>
-                        {activity.item}
-                      </td>
-                      <td className="text-secondary-color">{activity.user}</td>
-                      <td className="text-right text-secondary-color body-sm">{activity.time}</td>
+                      <td className="text-secondary-color">{order.items.length}</td>
+                      <td className="text-secondary-color">{order.discountCode ? `${order.discountCode} (${order.discountPercent}%)` : 'Sin descuento'}</td>
+                      <td className="text-right font-semibold text-on-surface">${order.total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     </tr>
                   ))
                 )}

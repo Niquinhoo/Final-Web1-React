@@ -164,6 +164,7 @@
 
 .input-with-icon .md3-input {
   width: 100%;
+  padding-left: 48px !important;
 }
 
 .input-with-icon:focus-within .input-icon {

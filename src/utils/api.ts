@@ -15,6 +15,8 @@ import {
   updateProduct,
   getCategoryById,
   getUserById,
+  getUserOrders,
+  updateOrderStatus,
   updateUser,
 } from './store';
 import type { Category, Product, UserPayload } from './store';
@@ -143,6 +145,11 @@ export async function apiFetch<T>(endpoint: string, options?: RequestInit): Prom
       if (!deleteUser(id)) notFound('Usuario');
       return {} as T;
     }
+  }
+
+  if (resource === 'orders') {
+    if (method === 'GET' && !id) return getUserOrders() as T;
+    if (method === 'PUT' && id) return (updateOrderStatus(id, readBody(options).status) || notFound('Orden')) as T;
   }
 
   throw new Error(`Endpoint local no implementado: ${method} ${endpoint}`);

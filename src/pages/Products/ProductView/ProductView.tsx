@@ -283,7 +283,7 @@ export default function ProductView() {
               />
             </div>
 
-            <div className="form-fields-row" style={{ display: 'flex', gap: '16px' }}>
+            <div className="form-fields-row">
               <div className="form-field-group flex-1">
                 <label htmlFor="prod-price" className="label-sm uppercase">Precio ($) *</label>
                 <input
@@ -354,7 +354,7 @@ export default function ProductView() {
 
             <div className="form-field-group">
               <label htmlFor="prod-image" className="label-sm uppercase">Imagen del Producto</label>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '8px' }}>
+              <div className="product-image-controls">
                 <input
                   type="text"
                   id="prod-image"

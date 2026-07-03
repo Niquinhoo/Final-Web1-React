@@ -1,4 +1,5 @@
 export type ProductStatus = 'Activo' | 'Stock Bajo' | 'Sin Stock';
+export type OrderStatus = 'Recibido' | 'En proceso' | 'Listo para entregar';
 
 export interface Product {
   id: number;
@@ -53,6 +54,11 @@ export interface User {
 export interface Order {
   id: number;
   userId: number | null;
+  status: OrderStatus;
+  subtotal: number;
+  discountCode?: string;
+  discountPercent: number;
+  discountAmount: number;
   total: number;
   createdAt: string;
   items: Array<{
@@ -60,6 +66,12 @@ export interface Order {
     quantity: number;
     price: number;
   }>;
+}
+
+export interface OrderDiscount {
+  code: string;
+  percent: number;
+  amount: number;
 }
 
 export interface RegisterValues {
@@ -506,7 +518,13 @@ function saveUsers(users: User[]) {
 
 function getOrders(): Order[] {
   ensureStore();
-  return readJson<Order[]>(keys.orders, []);
+  return readJson<Order[]>(keys.orders, []).map((order) => ({
+    ...order,
+    status: order.status || 'Recibido',
+    subtotal: order.subtotal ?? order.items.reduce((total, item) => total + item.price * item.quantity, 0),
+    discountPercent: order.discountPercent || 0,
+    discountAmount: order.discountAmount || 0,
+  }));
 }
 
 function saveOrders(orders: Order[]) {
@@ -790,15 +808,21 @@ export function getUserOrders(userId?: number): Order[] {
   return userId ? orders.filter((order) => order.userId === userId) : orders;
 }
 
-export function createOrderFromCart(userId: number | null): Order | undefined {
+export function createOrderFromCart(userId: number | null, discount?: OrderDiscount | null): Order | undefined {
   const cart = getCartDetail();
   if (cart.items.length === 0) return undefined;
 
   const orders = getOrders();
+  const discountAmount = Math.min(discount?.amount || 0, cart.summary.total);
   const order: Order = {
     id: nextId(orders),
     userId,
-    total: cart.summary.total,
+    status: 'Recibido',
+    subtotal: cart.summary.subtotal,
+    discountCode: discount?.code,
+    discountPercent: discount?.percent || 0,
+    discountAmount,
+    total: cart.summary.total - discountAmount,
     createdAt: new Date().toISOString(),
     items: cart.items.map((item) => ({
       productId: Number(item.productId),
@@ -810,6 +834,18 @@ export function createOrderFromCart(userId: number | null): Order | undefined {
   saveOrders([...orders, order]);
   clearCart();
   return order;
+}
+
+export function updateOrderStatus(id: unknown, status: unknown): Order | undefined {
+  const orderId = Number(id);
+  if (!Number.isInteger(orderId)) return undefined;
+  if (status !== 'Recibido' && status !== 'En proceso' && status !== 'Listo para entregar') return undefined;
+
+  const nextStatus: OrderStatus = status;
+  const orders = getOrders();
+  const updated = orders.map((order) => (order.id === orderId ? { ...order, status: nextStatus } : order));
+  saveOrders(updated);
+  return updated.find((order) => order.id === orderId);
 }
 
 export function resetLocalData() {

@@ -115,11 +115,11 @@ export default function UsersList() {
           <table className="md3-table">
             <thead>
               <tr>
-                <th>ID</th>
+                <th className="hide-on-mobile">ID</th>
                 <th>Nombre</th>
                 <th>Email</th>
                 <th className="text-center">Rol</th>
-                <th>Alta</th>
+                <th className="hide-on-mobile">Alta</th>
                 <th className="text-right">Acciones</th>
               </tr>
             </thead>
@@ -140,7 +140,7 @@ export default function UsersList() {
               ) : (
                 filteredUsers.map((user) => (
                   <tr key={user.id}>
-                    <td className="text-secondary-color">#{user.id}</td>
+                    <td className="text-secondary-color hide-on-mobile">#{user.id}</td>
                     <td>
                       <Link to={`/admin/users/${user.id}`} className="user-name-link font-semibold">
                         {user.name}
@@ -150,7 +150,7 @@ export default function UsersList() {
                     <td className="text-center">
                       <Chip label={user.adminFlag ? 'Admin' : 'Usuario'} color={user.adminFlag ? 'success' : 'neutral'} />
                     </td>
-                    <td>{formatDate(user.createdAt)}</td>
+                    <td className="hide-on-mobile">{formatDate(user.createdAt)}</td>
                     <td className="text-right">
                       <div className="table-row-actions">
                         <Link to={`/admin/users/${user.id}`} className="action-icon-btn" title="Editar">

@@ -259,9 +259,9 @@ export default function ProductsList() {
             <thead>
               <tr>
                 <th>Imagen</th>
-                <th>ID</th>
+                <th className="hide-on-mobile">ID</th>
                 <th>Nombre</th>
-                <th>Categoría</th>
+                <th className="hide-on-mobile">Categoría</th>
                 <th className="text-right">Precio</th>
                 <th className="text-right">Stock</th>
                 <th className="text-center">Estado</th>
@@ -290,13 +290,13 @@ export default function ProductsList() {
                     <td>
                       <ProductRowImage src={product.src} alt={product.title} />
                     </td>
-                    <td className="text-secondary-color">#{product.id}</td>
+                    <td className="text-secondary-color hide-on-mobile">#{product.id}</td>
                     <td>
                       <Link to={`/admin/products/${product.id}`} className="product-name-link font-semibold">
                         {product.title}
                       </Link>
                     </td>
-                    <td>{product.category}</td>
+                    <td className="hide-on-mobile">{product.category}</td>
                     <td className="text-right">${product.price.toFixed(2)}</td>
                     <td className={`text-right ${product.stock <= 12 ? 'error-text font-semibold' : ''}`}>
                       {product.stock}

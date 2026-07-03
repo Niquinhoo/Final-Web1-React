@@ -213,6 +213,17 @@
   color: var(--md-sys-color-on-surface);
 }
 
+.action-cell span:last-child {
+  display: grid;
+  gap: 2px;
+}
+
+.action-cell small {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 12px;
+  font-weight: 400;
+}
+
 .action-icon {
   font-size: 20px;
   width: 32px;
@@ -259,4 +270,3 @@
 .stat-card.low-stock-alert .stat-icon {
   background-color: rgba(255, 255, 255, 0.15) !important;
 }
-

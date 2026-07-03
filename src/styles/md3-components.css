@@ -478,3 +478,18 @@
   background-color: var(--md-sys-color-surface-container-low);
   border: 1px dashed var(--md-sys-color-outline-variant);
 }
+
+@media (max-width: 768px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+  .form-btn-actions {
+    flex-direction: column-reverse;
+    gap: var(--md-sys-spacing-3);
+  }
+  .form-btn-actions .md3-btn,
+  .form-btn-actions .user-cancel-link {
+    width: 100%;
+    justify-content: center;
+  }
+}

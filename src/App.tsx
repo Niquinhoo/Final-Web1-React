@@ -29,6 +29,8 @@ import {
   HelpCircle,
   Sun,
   Moon,
+  Menu,
+  X,
 } from 'lucide-react';
 import {
   addProductToCart,
@@ -53,7 +55,7 @@ import {
   searchProductsByName,
   updateProductQuantity,
 } from './utils/store';
-import type { CartDetail, Order, Product, RegisterErrors, User, Category } from './utils/store';
+import type { CartDetail, Order, OrderDiscount, Product, RegisterErrors, User, Category } from './utils/store';
 import { apiFetch } from './utils/api';
 import { useTheme } from './components/_md3/hooks';
 
@@ -66,6 +68,7 @@ import ProductsList from './pages/Products/ProductsList/ProductsList';
 import ProductView from './pages/Products/ProductView/ProductView';
 import CategoriesList from './pages/Categories/CategoriesList/CategoriesList';
 import CategoryView from './pages/Categories/CategoryView/CategoryView';
+import OrdersKanban from './pages/Orders/OrdersKanban/OrdersKanban';
 import UsersList from './pages/Users/UsersList/UsersList';
 import UserView from './pages/Users/UserView/UserView';
 import Profile from './pages/Profile/Profile';
@@ -88,12 +91,56 @@ function useAppState() {
   return value;
 }
 
+function useStoredDiscount() {
+  const [discount, setDiscount] = useState<StoredDiscount | null>(() => {
+    try {
+      const saved = localStorage.getItem(ORDER_DISCOUNT_KEY);
+      return saved ? JSON.parse(saved) as StoredDiscount : null;
+    } catch {
+      return null;
+    }
+  });
+
+  function saveDiscount(nextDiscount: StoredDiscount | null) {
+    setDiscount(nextDiscount);
+    if (nextDiscount) localStorage.setItem(ORDER_DISCOUNT_KEY, JSON.stringify(nextDiscount));
+    else localStorage.removeItem(ORDER_DISCOUNT_KEY);
+  }
+
+  return { discount, saveDiscount };
+}
+
 function formatPrice(value: number): string {
   return `$${value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function categoryPath(name: string): string {
   return `/category/${encodeURIComponent(name)}`;
+}
+
+const ORDER_DISCOUNT_KEY = 'pediloo_order_discount';
+const DISCOUNT_CODES = {
+  descuento10: { code: 'DESCUENTO10', percent: 10 },
+};
+
+type StoredDiscount = typeof DISCOUNT_CODES.descuento10;
+
+function calculateDiscountAmount(cart: CartDetail, discount: StoredDiscount | null): number {
+  return discount ? (cart.summary.subtotal * discount.percent) / 100 : 0;
+}
+
+function highlightMatch(text: string, query: string) {
+  const index = text.toLowerCase().indexOf(query.trim().toLowerCase());
+  if (index === -1) return text;
+
+  const end = index + query.trim().length;
+  return (
+    <>
+      {text.slice(0, index)}
+      <strong>{text.slice(index, end)}</strong>
+      {text.slice(end)}
+    </>
+  );
 }
 
 function StoreProvider({ children }: { children: ReactNode }) {
@@ -125,12 +172,18 @@ const PageWrapper = ({ children }: { children: ReactNode }) => (
 function Layout() {
   const { cart, user } = useAppState();
   const [query, setQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchExpanded, setSearchExpanded] = useState(false);
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
 
   const [isHovered, setIsHovered] = useState(false);
   const [showCartPreview, setShowCartPreview] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const prevTotalItemsRef = useRef(cart.summary.totalItems);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (cart.summary.totalItems > prevTotalItemsRef.current) {
@@ -145,17 +198,74 @@ function Layout() {
   }, [cart.summary.totalItems]);
 
   const isOpen = showCartPreview || isHovered;
+  const trimmedQuery = query.trim();
+  const showSearchResults = searchExpanded && searchFocused && trimmedQuery.length > 0;
+  const showMobileSearchResults = searchFocused && trimmedQuery.length > 0;
+
+  useEffect(() => {
+    if (!trimmedQuery) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        const data = await apiFetch<Product[]>(`/products?q=${encodeURIComponent(trimmedQuery)}`);
+        setSearchResults(data.slice(0, 5));
+      } catch (error) {
+        console.error('Error al buscar productos:', error);
+        setSearchResults(searchProductsByName(trimmedQuery).slice(0, 5));
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [trimmedQuery]);
+
+  function handleQueryChange(event: ChangeEvent<HTMLInputElement>) {
+    const value = event.target.value;
+    setQuery(value);
+    setSearchLoading(Boolean(value.trim()));
+    if (!value.trim()) setSearchResults([]);
+  }
+
+  function openSearch() {
+    setSearchExpanded(true);
+    window.setTimeout(() => searchInputRef.current?.focus(), 0);
+  }
+
+  function closeSearch() {
+    setSearchExpanded(false);
+    setSearchFocused(false);
+    setQuery('');
+    setSearchResults([]);
+    setSearchLoading(false);
+  }
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (query.trim()) {
-      navigate(`/search?query=${encodeURIComponent(query.trim())}`);
+    if (!searchExpanded) {
+      openSearch();
+      return;
+    }
+
+    if (trimmedQuery) {
+      setSearchFocused(false);
+      setSearchExpanded(false);
+      navigate(`/search?query=${encodeURIComponent(trimmedQuery)}`);
     }
   }
 
   return (
     <div className="store-shell">
       <header className="store-header">
+        <button
+          type="button"
+          className="store-mobile-menu-btn"
+          onClick={() => setIsMobileNavOpen(true)}
+          aria-label="Abrir navegación"
+        >
+          <Menu size={24} />
+        </button>
+
         <Link to="/home" className="brand-link">
           <ShoppingBag size={24} className="brand-logo-icon" />
           <span>pediloo</span>
@@ -167,14 +277,71 @@ function Layout() {
           <NavLink to="/categories">Categorias</NavLink>
         </nav>
 
-        <form className="header-search" onSubmit={handleSearch}>
-          <Search size={18} className="search-icon" />
+        <form
+          className={`header-search${searchExpanded ? ' is-expanded' : ''}`}
+          onSubmit={handleSearch}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null) && !trimmedQuery) {
+              setSearchExpanded(false);
+              setSearchFocused(false);
+            }
+          }}
+        >
+          <button
+            type={searchExpanded ? 'submit' : 'button'}
+            className="search-icon-button"
+            onClick={() => {
+              if (!searchExpanded) openSearch();
+            }}
+            aria-label={searchExpanded ? 'Buscar productos' : 'Abrir búsqueda'}
+          >
+            <Search size={18} className="search-icon" />
+          </button>
           <input
+            ref={searchInputRef}
+            tabIndex={searchExpanded ? 0 : -1}
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={handleQueryChange}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setTimeout(() => setSearchFocused(false), 120)}
             placeholder="Buscar productos..."
             aria-label="Buscar productos"
           />
+          {searchExpanded && (
+            <button
+              type="button"
+              className="search-close-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                closeSearch();
+              }}
+              aria-label="Cerrar búsqueda"
+            >
+              <X size={18} />
+            </button>
+          )}
+          {showSearchResults && (
+            <div className="search-results-dropdown">
+              {searchLoading ? (
+                <p>Buscando...</p>
+              ) : searchResults.length > 0 ? (
+                searchResults.map((product) => (
+                  <Link
+                    key={product.id}
+                    to={`/products/${product.id}`}
+                    className="search-result-item"
+                    onClick={closeSearch}
+                  >
+                    <img src={product.src} alt={product.title} />
+                    <span>{highlightMatch(product.title, trimmedQuery)}</span>
+                    <small>{formatPrice(product.price)}</small>
+                  </Link>
+                ))
+              ) : (
+                <p>No hay coincidencias.</p>
+              )}
+            </div>
+          )}
         </form>
 
         <div className="header-actions">
@@ -268,6 +435,127 @@ function Layout() {
           )}
         </div>
       </header>
+      
+      <AnimatePresence>
+        {isMobileNavOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="store-mobile-nav-backdrop"
+              onClick={() => setIsMobileNavOpen(false)}
+            />
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'tween', duration: 0.25 }}
+              className="store-mobile-nav-drawer"
+            >
+              <div className="drawer-header">
+                <Link to="/home" className="brand-link" onClick={() => setIsMobileNavOpen(false)}>
+                  <ShoppingBag size={24} className="brand-logo-icon" />
+                  <span>pediloo</span>
+                </Link>
+                <button onClick={() => setIsMobileNavOpen(false)} className="close-drawer-btn" aria-label="Cerrar menú">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="drawer-search-wrapper">
+                <form
+                  className="drawer-search"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (trimmedQuery) {
+                      closeSearch();
+                      setIsMobileNavOpen(false);
+                      navigate(`/search?query=${encodeURIComponent(trimmedQuery)}`);
+                    }
+                  }}
+                >
+                  <Search size={18} className="search-icon" />
+                  <input
+                    value={query}
+                    onChange={handleQueryChange}
+                    onFocus={() => setSearchFocused(true)}
+                    onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+                    placeholder="Buscar productos..."
+                    aria-label="Buscar productos"
+                  />
+                </form>
+                {showMobileSearchResults && (
+                  <div className="search-results-dropdown mobile-search-dropdown">
+                    {searchLoading ? (
+                      <p>Buscando...</p>
+                    ) : searchResults.length > 0 ? (
+                      searchResults.map((product) => (
+                        <Link
+                          key={product.id}
+                          to={`/products/${product.id}`}
+                          className="search-result-item"
+                          onClick={() => {
+                            closeSearch();
+                            setIsMobileNavOpen(false);
+                          }}
+                        >
+                          <img src={product.src} alt={product.title} />
+                          <span>{highlightMatch(product.title, trimmedQuery)}</span>
+                          <small>{formatPrice(product.price)}</small>
+                        </Link>
+                      ))
+                    ) : (
+                      <p>No hay coincidencias.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <nav className="drawer-nav">
+                <NavLink to="/home" onClick={() => setIsMobileNavOpen(false)}>Inicio</NavLink>
+                <NavLink to="/products" onClick={() => setIsMobileNavOpen(false)}>Productos</NavLink>
+                <NavLink to="/categories" onClick={() => setIsMobileNavOpen(false)}>Categorias</NavLink>
+              </nav>
+
+              <div className="drawer-footer">
+                <div className="drawer-theme-toggle">
+                  <span>Tema</span>
+                  <button 
+                    type="button" 
+                    className="icon-link theme-toggle-btn" 
+                    onClick={toggleTheme}
+                    style={{ border: 0, background: 'transparent', cursor: 'pointer', display: 'inline-flex' }}
+                  >
+                    {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                  </button>
+                </div>
+                {user ? (
+                  <div className="drawer-user-info">
+                    <p>Usuario: <strong>{user.name}</strong></p>
+                    <div className="drawer-actions-row">
+                      <Link to="/account" className="drawer-btn" onClick={() => setIsMobileNavOpen(false)}>
+                        Mi Cuenta
+                      </Link>
+                      {user.adminFlag && (
+                        <Link to="/admin/dashboard" className="drawer-btn admin-btn" onClick={() => setIsMobileNavOpen(false)}>
+                          Admin
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="drawer-auth-actions">
+                    <Link to="/login" className="drawer-btn primary" onClick={() => setIsMobileNavOpen(false)}>
+                      Iniciar Sesión
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <main className="store-main">
         <AnimatePresence mode="wait">
@@ -781,9 +1069,11 @@ function SearchPage() {
 // STOREFRONT CART PAGE
 function CartPage() {
   const { cart, refresh } = useAppState();
+  const { discount, saveDiscount } = useStoredDiscount();
 
   function clear() {
     clearCart();
+    saveDiscount(null);
     refresh();
   }
 
@@ -843,26 +1133,35 @@ function CartPage() {
           )}
         </div>
 
-        <OrderSummary cart={cart} />
+        <OrderSummary cart={cart} discount={discount} onDiscountChange={saveDiscount} />
       </section>
     </PageWrapper>
   );
 }
 
-function OrderSummary({ cart }: { cart: CartDetail }) {
-  const [coupon, setCoupon] = useState('');
-  const [discountPercent, setDiscountPercent] = useState(0);
+function OrderSummary({
+  cart,
+  discount,
+  onDiscountChange,
+}: {
+  cart: CartDetail;
+  discount: StoredDiscount | null;
+  onDiscountChange: (discount: StoredDiscount | null) => void;
+}) {
+  const [coupon, setCoupon] = useState(discount?.code || '');
 
   function applyDiscount(e: FormEvent) {
     e.preventDefault();
-    if (coupon.toLowerCase() === 'descuento10') {
-      setDiscountPercent(10);
+    const nextDiscount = DISCOUNT_CODES[coupon.trim().toLowerCase() as keyof typeof DISCOUNT_CODES];
+    if (nextDiscount) {
+      onDiscountChange(nextDiscount);
+      setCoupon(nextDiscount.code);
     } else {
       alert('Cupón inválido. Prueba con "descuento10".');
     }
   }
 
-  const discountAmount = (cart.summary.subtotal * discountPercent) / 100;
+  const discountAmount = calculateDiscountAmount(cart, discount);
   const finalTotal = cart.summary.total - discountAmount;
 
   return (
@@ -875,7 +1174,7 @@ function OrderSummary({ cart }: { cart: CartDetail }) {
       {cart.summary.totalItems > 0 && (
         <form onSubmit={applyDiscount} className="discount-form">
           <input 
-            value={coupon} 
+            value={coupon}
             onChange={(e) => setCoupon(e.target.value)} 
             placeholder="Código de descuento" 
             className="discount-input"
@@ -889,10 +1188,13 @@ function OrderSummary({ cart }: { cart: CartDetail }) {
           <span>Subtotal</span>
           <strong>{formatPrice(cart.summary.subtotal)}</strong>
         </div>
-        {discountPercent > 0 && (
+        {discount && (
           <div className="summary-row discount-row">
-            <span>Descuento (10%)</span>
+            <span>{discount.code} ({discount.percent}%)</span>
             <strong>-{formatPrice(discountAmount)}</strong>
+            <button type="button" className="discount-clear-btn" onClick={() => onDiscountChange(null)}>
+              Quitar
+            </button>
           </div>
         )}
         <div className="summary-row">
@@ -919,12 +1221,18 @@ function OrderSummary({ cart }: { cart: CartDetail }) {
 function CheckoutPage() {
   const { cart, user, refresh } = useAppState();
   const [order, setOrder] = useState<Order | null>(null);
+  const { discount, saveDiscount } = useStoredDiscount();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const createdOrder = createOrderFromCart(user?.id || null);
+    const orderDiscount: OrderDiscount | null = discount ? {
+      ...discount,
+      amount: calculateDiscountAmount(cart, discount),
+    } : null;
+    const createdOrder = createOrderFromCart(user?.id || null, orderDiscount);
     if (createdOrder) {
       setOrder(createdOrder);
+      saveDiscount(null);
       refresh();
     }
   }
@@ -968,7 +1276,7 @@ function CheckoutPage() {
             Confirmar pedido
           </button>
         </form>
-        <OrderSummary cart={cart} />
+        <OrderSummary cart={cart} discount={discount} onDiscountChange={saveDiscount} />
       </section>
     </PageWrapper>
   );
@@ -1103,6 +1411,7 @@ function AuthLayout({ title, subtitle, children }: { title: string; subtitle: st
 function AccountPage() {
   const { user, refresh } = useAppState();
   const navigate = useNavigate();
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   if (!user) {
     return (
@@ -1166,20 +1475,93 @@ function AccountPage() {
           ) : (
             <div className="orders-table">
               {orders.map((orderItem) => (
-                <article key={orderItem.id} className="order-row">
+                <button key={orderItem.id} type="button" className="order-row" onClick={() => setSelectedOrder(orderItem)}>
                   <div className="order-number-date">
                     <strong>Orden #{orderItem.id}</strong>
                     <span>{new Date(orderItem.createdAt).toLocaleString('es-AR')}</span>
                   </div>
                   <span className="order-items-count">{orderItem.items.length} productos</span>
                   <strong className="order-total">{formatPrice(orderItem.total)}</strong>
-                </article>
+                </button>
               ))}
             </div>
           )}
         </div>
+        <AnimatePresence>
+          {selectedOrder && <OrderDetailModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />}
+        </AnimatePresence>
       </section>
     </PageWrapper>
+  );
+}
+
+function OrderDetailModal({ order, onClose }: { order: Order; onClose: () => void }) {
+  const products = getAllProducts();
+  const subtotal = order.subtotal ?? order.items.reduce((total, item) => total + item.price * item.quantity, 0);
+  const discountAmount = order.discountAmount ?? 0;
+
+  return (
+    <motion.div className="order-modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <motion.article
+        className="order-modal"
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.98 }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="order-modal-title"
+      >
+        <div className="order-modal-header">
+          <div>
+            <span className="eyebrow">Pedido tomado</span>
+            <h2 id="order-modal-title">Orden #{order.id}</h2>
+            <p>{new Date(order.createdAt).toLocaleString('es-AR')}</p>
+          </div>
+          <button type="button" className="icon-link" onClick={onClose} aria-label="Cerrar detalle">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="order-modal-items">
+          {order.items.map((item) => {
+            const product = products.find((current) => current.id === item.productId);
+            const title = product?.title || `Producto #${item.productId}`;
+            return (
+              <div key={item.productId} className="order-modal-item">
+                <img src={product?.src || '/assets/productos/proximamente.png'} alt={title} />
+                <div>
+                  <strong>{title}</strong>
+                  <span>{item.quantity} x {formatPrice(item.price)}</span>
+                </div>
+                <strong>{formatPrice(item.price * item.quantity)}</strong>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="order-modal-totals">
+          <div className="summary-row">
+            <span>Subtotal</span>
+            <strong>{formatPrice(subtotal)}</strong>
+          </div>
+          {order.discountCode && (
+            <div className="summary-row discount-row">
+              <span>{order.discountCode} ({order.discountPercent}%)</span>
+              <strong>-{formatPrice(discountAmount)}</strong>
+            </div>
+          )}
+          <div className="summary-row">
+            <span>Envío</span>
+            <strong>Gratis</strong>
+          </div>
+          <div className="summary-divider"></div>
+          <div className="summary-row total">
+            <span>Total</span>
+            <strong>{formatPrice(order.total)}</strong>
+          </div>
+        </div>
+      </motion.article>
+    </motion.div>
   );
 }
 
@@ -1263,6 +1645,7 @@ function AdminLayout() {
             <Route path="categories" element={<CategoriesList />} />
             <Route path="categories/new" element={<CategoryView />} />
             <Route path="categories/:id" element={<CategoryView />} />
+            <Route path="orders" element={<OrdersKanban />} />
             <Route path="users" element={<UsersList />} />
             <Route path="users/new" element={<UserView />} />
             <Route path="users/:id" element={<UserView />} />

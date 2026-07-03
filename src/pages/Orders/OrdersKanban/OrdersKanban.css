@@ -1,0 +1,140 @@
+.orders-kanban-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-8);
+  animation: fadeIn 0.4s ease-out;
+}
+
+.orders-kanban {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  gap: var(--md-sys-spacing-5);
+  align-items: start;
+}
+
+.orders-column {
+  min-height: 460px;
+  padding: var(--md-sys-spacing-4);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-lg);
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.orders-column.is-drop-target {
+  border-color: var(--md-sys-color-outline);
+}
+
+.orders-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--md-sys-spacing-4);
+}
+
+.orders-column-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.orders-column-header span {
+  min-width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font-weight: 700;
+}
+
+.orders-column-list {
+  display: grid;
+  gap: var(--md-sys-spacing-3);
+}
+
+.order-kanban-card {
+  display: grid;
+  gap: var(--md-sys-spacing-4);
+  padding: var(--md-sys-spacing-4);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-md);
+  background: var(--md-sys-color-surface-container-lowest);
+  cursor: grab;
+}
+
+.order-kanban-card:active {
+  cursor: grabbing;
+}
+
+.order-card-header,
+.order-card-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-3);
+  align-items: flex-start;
+}
+
+.order-card-header div,
+.order-card-products {
+  display: grid;
+  gap: 2px;
+}
+
+.order-card-header strong,
+.order-card-footer small {
+  color: var(--md-sys-color-on-surface);
+}
+
+.order-card-header span,
+.order-card-products span,
+.order-card-footer span {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 13px;
+}
+
+.order-card-products {
+  padding: var(--md-sys-spacing-3);
+  border-radius: var(--md-sys-shape-corner-sm);
+  background: var(--md-sys-color-surface-container);
+}
+
+.order-status-select {
+  display: grid;
+  gap: var(--md-sys-spacing-2);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.order-status-select select {
+  width: 100%;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-sm);
+  padding: 10px 12px;
+  background: var(--md-sys-color-surface-container-lowest);
+  color: var(--md-sys-color-on-surface);
+  font: inherit;
+}
+
+.orders-empty {
+  padding: var(--md-sys-spacing-8);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-lg);
+  color: var(--md-sys-color-on-surface-variant);
+  background: var(--md-sys-color-surface-container-lowest);
+  text-align: center;
+}
+
+@media (max-width: 1100px) {
+  .orders-kanban {
+    grid-template-columns: 1fr;
+  }
+
+  .orders-column {
+    min-height: 260px;
+  }
+}
