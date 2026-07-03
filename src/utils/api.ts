@@ -1,18 +1,23 @@
 import {
   createCategory,
+  createUser,
   createProduct,
   deleteCategory,
   deleteProduct,
+  deleteUser,
   ensureStore,
   getAllCategories,
+  getAllUsers,
   getProductById,
   getProductsSortedByPrice,
   searchProductsByName,
   updateCategory,
   updateProduct,
   getCategoryById,
+  getUserById,
+  updateUser,
 } from './store';
-import type { Category, Product } from './store';
+import type { Category, Product, UserPayload } from './store';
 
 export const API_BASE_URL = 'local://pediloo';
 
@@ -81,6 +86,17 @@ function normalizeCategoryPayload(body: JsonRecord): Partial<Category> {
   };
 }
 
+function normalizeUserPayload(body: JsonRecord): UserPayload {
+  return {
+    firstName: typeof body.firstName === 'string' ? body.firstName : undefined,
+    lastName: typeof body.lastName === 'string' ? body.lastName : undefined,
+    email: typeof body.email === 'string' ? body.email : undefined,
+    password: typeof body.password === 'string' ? body.password : undefined,
+    confirmPassword: typeof body.confirmPassword === 'string' ? body.confirmPassword : undefined,
+    adminFlag: typeof body.adminFlag === 'boolean' ? body.adminFlag : undefined,
+  };
+}
+
 /**
  * Adapter local con la misma forma que la API REST original.
  * Mantiene tienda y dashboard persistiendo dentro del navegador.
@@ -114,6 +130,17 @@ export async function apiFetch<T>(endpoint: string, options?: RequestInit): Prom
     if (method === 'PUT' && id) return (updateCategory(id, normalizeCategoryPayload(readBody(options))) || notFound('Categoría')) as T;
     if (method === 'DELETE' && id) {
       if (!deleteCategory(id)) notFound('Categoría');
+      return {} as T;
+    }
+  }
+
+  if (resource === 'users') {
+    if (method === 'GET' && !id) return getAllUsers() as T;
+    if (method === 'GET' && id) return (getUserById(id) || notFound('Usuario')) as T;
+    if (method === 'POST') return await createUser(normalizeUserPayload(readBody(options))) as T;
+    if (method === 'PUT' && id) return (await updateUser(id, normalizeUserPayload(readBody(options))) || notFound('Usuario')) as T;
+    if (method === 'DELETE' && id) {
+      if (!deleteUser(id)) notFound('Usuario');
       return {} as T;
     }
   }

@@ -11,6 +11,16 @@ interface CategoryData {
   icon?: string;
 }
 
+interface ProductData {
+  id: string | number;
+  title: string;
+  category: string;
+  price: number;
+  stock: number;
+  src?: string;
+  description?: string;
+}
+
 export default function CategoryView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -20,7 +30,10 @@ export default function CategoryView() {
   const snackbar = useSnackbar();
 
   const [name, setName] = useState('');
+  const [originalName, setOriginalName] = useState('');
   const [icon, setIcon] = useState('folder');
+  const [products, setProducts] = useState<ProductData[]>([]);
+  const [assignedProductIds, setAssignedProductIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -29,13 +42,24 @@ export default function CategoryView() {
     async function loadCategory() {
       try {
         setLoading(true);
-        const category = await apiFetch<CategoryData>(`/categories/${id}`);
+        const [category, productsList] = await Promise.all([
+          apiFetch<CategoryData>(`/categories/${id}`),
+          apiFetch<ProductData[]>('/products'),
+        ]);
         if (category) {
-          setName(category.name || '');
+          const categoryName = category.name || '';
+          setName(categoryName);
+          setOriginalName(categoryName);
           setIcon(category.icon || 'folder');
-      }
-    } catch (error) {
-      console.warn(`Error al cargar la categoría #${id}.`, error);
+          setProducts(productsList);
+          setAssignedProductIds(
+            productsList
+              .filter((product) => product.category === categoryName)
+              .map((product) => String(product.id)),
+          );
+        }
+      } catch (error) {
+        console.warn(`Error al cargar la categoría #${id}.`, error);
       } finally {
         setLoading(false);
       }
@@ -43,6 +67,15 @@ export default function CategoryView() {
 
     loadCategory();
   }, [id, isEditMode]);
+
+  const toggleAssignedProduct = (productId: string | number) => {
+    const key = String(productId);
+    setAssignedProductIds((current) => (
+      current.includes(key)
+        ? current.filter((item) => item !== key)
+        : [...current, key]
+    ));
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,10 +90,26 @@ export default function CategoryView() {
       const endpoint = isEditMode ? `/categories/${id}` : '/categories';
       const method = isEditMode ? 'PUT' : 'POST';
 
-      await apiFetch<CategoryData>(endpoint, {
+      const savedCategory = await apiFetch<CategoryData>(endpoint, {
         method,
         body: JSON.stringify(categoryPayload),
       });
+
+      if (isEditMode) {
+        const selected = new Set(assignedProductIds);
+        await Promise.all(products.map((product) => {
+          const shouldBelong = selected.has(String(product.id));
+          const belongedBefore = product.category === originalName;
+          const nextCategory = shouldBelong ? savedCategory.name : belongedBefore ? 'Otros' : product.category;
+
+          if (nextCategory === product.category) return Promise.resolve();
+
+          return apiFetch<ProductData>(`/products/${product.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ ...product, category: nextCategory }),
+          });
+        }));
+      }
 
       snackbar.show(isEditMode ? 'Categoría actualizada correctamente.' : 'Categoría creada correctamente.');
       navigate('/admin/categories');
@@ -154,6 +203,35 @@ export default function CategoryView() {
             </div>
           </form>
         </Card>
+
+        {isEditMode && (
+          <Card className="category-products-card">
+            <h3 className="headline-sm">Productos en la categoría</h3>
+            <p className="body-sm text-secondary-color">
+              Marca los productos que deben pertenecer a esta categoría.
+            </p>
+            <div className="category-products-list">
+              {products.length === 0 ? (
+                <p className="body-sm text-secondary-color">No hay productos disponibles.</p>
+              ) : (
+                products.map((product) => (
+                  <label key={product.id} className="category-product-row">
+                    <input
+                      type="checkbox"
+                      checked={assignedProductIds.includes(String(product.id))}
+                      onChange={() => toggleAssignedProduct(product.id)}
+                      disabled={loading}
+                    />
+                    <span>
+                      <strong>{product.title}</strong>
+                      <small>{product.category}</small>
+                    </span>
+                  </label>
+                ))
+              )}
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   );

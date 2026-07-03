@@ -1,0 +1,88 @@
+/* UsersList — page-specific styles only. */
+
+.users-canvas {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-8);
+  animation: fadeIn 0.4s ease-out;
+}
+
+.users-header-section,
+.users-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-4);
+  flex-wrap: wrap;
+  text-align: left;
+}
+
+.users-search-container {
+  position: relative;
+  min-width: 260px;
+}
+
+.users-search-container .search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.users-search-container .search-input {
+  width: 100%;
+  height: 48px;
+  padding-left: 44px;
+}
+
+.users-summary-card {
+  min-width: 220px;
+  padding: var(--md-sys-spacing-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-2);
+  text-align: left;
+}
+
+.users-summary-card strong {
+  font-size: 32px;
+  line-height: 1;
+  color: var(--md-sys-color-on-surface);
+}
+
+.users-table-container {
+  overflow: hidden;
+}
+
+.users-loading-cell,
+.users-empty-cell {
+  padding: 32px;
+}
+
+.users-loading-cell {
+  display: table-cell;
+}
+
+.users-loading-cell > * {
+  vertical-align: middle;
+  margin-right: 12px;
+}
+
+.user-name-link {
+  color: var(--md-sys-color-on-surface);
+  text-decoration: none;
+}
+
+.user-name-link:hover {
+  color: var(--md-sys-color-primary);
+}
+
+@media (max-width: 720px) {
+  .users-search-container,
+  .header-actions-group {
+    width: 100%;
+  }
+}

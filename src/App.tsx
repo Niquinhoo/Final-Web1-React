@@ -66,6 +66,8 @@ import ProductsList from './pages/Products/ProductsList/ProductsList';
 import ProductView from './pages/Products/ProductView/ProductView';
 import CategoriesList from './pages/Categories/CategoriesList/CategoriesList';
 import CategoryView from './pages/Categories/CategoryView/CategoryView';
+import UsersList from './pages/Users/UsersList/UsersList';
+import UserView from './pages/Users/UserView/UserView';
 import Profile from './pages/Profile/Profile';
 import NotFound from './pages/NotFound/NotFound';
 import Sidebar from './components/organisms/Sidebar/Sidebar';
@@ -1261,6 +1263,9 @@ function AdminLayout() {
             <Route path="categories" element={<CategoriesList />} />
             <Route path="categories/new" element={<CategoryView />} />
             <Route path="categories/:id" element={<CategoryView />} />
+            <Route path="users" element={<UsersList />} />
+            <Route path="users/new" element={<UserView />} />
+            <Route path="users/:id" element={<UserView />} />
             <Route path="profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

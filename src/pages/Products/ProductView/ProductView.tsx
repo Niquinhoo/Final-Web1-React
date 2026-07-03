@@ -15,6 +15,11 @@ interface ProductData {
   description?: string;
 }
 
+interface CategoryData {
+  id: string | number;
+  name: string;
+}
+
 export default function ProductView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -28,7 +33,8 @@ export default function ProductView() {
   const [stock, setStock] = useState<number>(0);
   const [src, setSrc] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('Electrónica');
+  const [category, setCategory] = useState('Otros');
+  const [categories, setCategories] = useState<CategoryData[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [originalData, setOriginalData] = useState<ProductData | null>(null);
@@ -64,6 +70,25 @@ export default function ProductView() {
   };
 
   useEffect(() => {
+    async function loadCategories() {
+      try {
+        const data = await apiFetch<CategoryData[]>('/categories');
+        const loadedCategories = Array.isArray(data) ? data : [];
+        setCategories(loadedCategories);
+        if (!isEditMode && loadedCategories.length > 0) {
+          setCategory((current) => (
+            loadedCategories.some((item) => item.name === current) ? current : loadedCategories[0].name
+          ));
+        }
+      } catch (error) {
+        console.warn('Error al cargar categorías locales.', error);
+      }
+    }
+
+    loadCategories();
+  }, [isEditMode]);
+
+  useEffect(() => {
     if (!isEditMode) return;
 
     async function loadProduct() {
@@ -76,7 +101,7 @@ export default function ProductView() {
           setStock(product.stock || 0);
           setSrc(product.src || '');
           setDescription(product.description || '');
-          setCategory(product.category || 'Electrónica');
+          setCategory(product.category || 'Otros');
           setOriginalData(product);
         }
       } catch (error) {
@@ -108,7 +133,7 @@ export default function ProductView() {
         setStock(originalData.stock || 0);
         setSrc(originalData.src || '');
         setDescription(originalData.description || '');
-        setCategory(originalData.category || 'Electrónica');
+        setCategory(originalData.category || 'Otros');
         snackbar.show('Cambios revertidos al estado original.');
       }
     } else {
@@ -117,7 +142,7 @@ export default function ProductView() {
       setStock(0);
       setSrc('');
       setDescription('');
-      setCategory('Electrónica');
+        setCategory('Otros');
       snackbar.show('Formulario de creación restablecido.');
     }
   };
@@ -285,11 +310,12 @@ export default function ProductView() {
                   style={{ height: '48px', padding: '0 16px', background: 'var(--md-sys-color-surface-container-lowest)' }}
                   disabled={loading}
                 >
-                  <option value="Electrónica">Electrónica</option>
-                  <option value="Muebles">Muebles</option>
-                  <option value="Cocina">Cocina</option>
-                  <option value="Moda">Moda</option>
-                  <option value="General">General</option>
+                  {categories.length === 0 && <option value={category}>{category}</option>}
+                  {categories.map((item) => (
+                    <option key={item.id} value={item.name}>
+                      {item.name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

@@ -69,6 +69,10 @@ export interface RegisterValues {
 }
 
 export type RegisterErrors = Partial<Record<'firstName' | 'lastName' | 'email' | 'password' | 'confirmPassword', string>>;
+export type UserPayload = Partial<Pick<User, 'firstName' | 'lastName' | 'email' | 'adminFlag'>> & {
+  password?: string;
+  confirmPassword?: string;
+};
 
 const PRODUCT_IMAGE_FALLBACK = '/assets/productos/proximamente.png';
 const SITE_NAME = 'pediloo';
@@ -682,6 +686,105 @@ export function logoutUser() {
   localStorage.removeItem(keys.sessionToken);
 }
 
+export function getAllUsers(): User[] {
+  return getUsers().sort((a, b) => a.id - b.id);
+}
+
+export function getUserById(id: unknown): User | undefined {
+  const numId = Number(id);
+  if (!Number.isInteger(numId) || numId <= 0) return undefined;
+  return getUsers().find((user) => user.id === numId);
+}
+
+function validateAdminUserPayload(payload: UserPayload, currentUserId?: number) {
+  const users = getUsers();
+  const firstName = String(payload.firstName || '').trim();
+  const lastName = String(payload.lastName || '').trim();
+  const email = String(payload.email || '').trim();
+
+  if (!firstName) throw new Error('El nombre es obligatorio.');
+  if (!lastName) throw new Error('El apellido es obligatorio.');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('El email es inválido.');
+  if (users.some((user) => user.id !== currentUserId && user.email.toLowerCase() === email.toLowerCase())) {
+    throw new Error('Ya existe un usuario con ese email.');
+  }
+
+  if (payload.password || payload.confirmPassword) {
+    if ((payload.password || '').length < 8) throw new Error('La contraseña debe tener al menos 8 caracteres.');
+    if (payload.password !== payload.confirmPassword) throw new Error('Las contraseñas no coinciden.');
+  }
+
+  return { firstName, lastName, email };
+}
+
+export async function createUser(payload: UserPayload): Promise<User> {
+  if (!payload.password) throw new Error('La contraseña es obligatoria.');
+
+  const values = validateAdminUserPayload(payload);
+  const users = getUsers();
+  const user: User = {
+    id: nextId(users),
+    name: `${values.firstName} ${values.lastName}`,
+    firstName: values.firstName,
+    lastName: values.lastName,
+    email: values.email,
+    passwordHash: await hashPassword(payload.password),
+    adminFlag: Boolean(payload.adminFlag),
+    createdAt: new Date().toISOString(),
+  };
+
+  saveUsers([...users, user]);
+  return user;
+}
+
+export async function updateUser(id: unknown, payload: UserPayload): Promise<User | undefined> {
+  const user = getUserById(id);
+  if (!user) return undefined;
+
+  const values = validateAdminUserPayload(
+    {
+      firstName: payload.firstName ?? user.firstName,
+      lastName: payload.lastName ?? user.lastName,
+      email: payload.email ?? user.email,
+      password: payload.password,
+      confirmPassword: payload.confirmPassword,
+    },
+    user.id,
+  );
+  const adminFlag = payload.adminFlag ?? user.adminFlag;
+
+  if (user.adminFlag && !adminFlag && getUsers().filter((item) => item.adminFlag).length <= 1) {
+    throw new Error('Debe quedar al menos un administrador.');
+  }
+
+  const updated: User = {
+    ...user,
+    name: `${values.firstName} ${values.lastName}`,
+    firstName: values.firstName,
+    lastName: values.lastName,
+    email: values.email,
+    adminFlag,
+    passwordHash: payload.password ? await hashPassword(payload.password) : user.passwordHash,
+  };
+
+  saveUsers(getUsers().map((item) => (item.id === user.id ? updated : item)));
+  return updated;
+}
+
+export function deleteUser(id: unknown): boolean {
+  const user = getUserById(id);
+  if (!user) return false;
+  if (user.adminFlag && getUsers().filter((item) => item.adminFlag).length <= 1) return false;
+
+  saveUsers(getUsers().filter((item) => item.id !== user.id));
+
+  if (localStorage.getItem(keys.currentUserId) === String(user.id)) {
+    logoutUser();
+  }
+
+  return true;
+}
+
 export function getUserOrders(userId?: number): Order[] {
   const orders = getOrders();
   return userId ? orders.filter((order) => order.userId === userId) : orders;
@@ -713,5 +816,6 @@ export function resetLocalData() {
   writeJson(keys.products, seedProducts);
   writeJson(keys.categories, seedCategories);
   writeJson(keys.cart, []);
+  writeJson(keys.users, [seedAdminUser]);
   writeJson(keys.orders, []);
 }

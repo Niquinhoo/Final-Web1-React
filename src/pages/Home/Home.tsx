@@ -19,6 +19,10 @@ interface Category {
   icon?: string;
 }
 
+interface UserData {
+  id: string | number;
+}
+
 interface Activity {
   id: number;
   action: string;
@@ -45,6 +49,7 @@ function getStoredUsername(): string {
 export default function Home() {
   const [totalProducts, setTotalProducts] = useState<number>(0);
   const [totalCategories, setTotalCategories] = useState<number>(0);
+  const [totalUsers, setTotalUsers] = useState<number>(0);
   const [lowStock, setLowStock] = useState<number>(0);
   const [activities] = useState<Activity[]>([]);
   const [username] = useState<string>(getStoredUsername);
@@ -69,6 +74,15 @@ export default function Home() {
         }
       } catch (error) {
         console.warn('No se pudieron cargar categorías locales.', error);
+      }
+
+      try {
+        const usersList = await apiFetch<UserData[]>('/users');
+        if (Array.isArray(usersList)) {
+          setTotalUsers(usersList.length);
+        }
+      } catch (error) {
+        console.warn('No se pudieron cargar usuarios locales.', error);
       }
     }
 
@@ -115,6 +129,24 @@ export default function Home() {
             <Link to="/admin/categories/new" className="md3-btn md3-btn-filled btn-sm flex-1">
               <span className="material-symbols-outlined icon-btn">add</span>
               Agregar Categoría
+            </Link>
+          </div>
+        </Card>
+
+        <Card interactive className="stat-card action-stat-card">
+          <div className="stat-card-header">
+            <span className="label-md text-secondary-color uppercase">Usuarios</span>
+            <span className="material-symbols-outlined stat-icon primary-icon">group</span>
+          </div>
+          <div className="stat-value">{totalUsers}</div>
+          <div className="stat-actions">
+            <Link to="/admin/users" className="md3-btn md3-btn-outlined btn-sm flex-1">
+              <span className="material-symbols-outlined icon-btn">list</span>
+              Ver Listado
+            </Link>
+            <Link to="/admin/users/new" className="md3-btn md3-btn-filled btn-sm flex-1">
+              <span className="material-symbols-outlined icon-btn">person_add</span>
+              Agregar Usuario
             </Link>
           </div>
         </Card>

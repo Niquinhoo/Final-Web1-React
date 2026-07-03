@@ -37,6 +37,14 @@ export default function Sidebar({ isSidebarOpen, closeSidebar }: SidebarProps) {
           <span className="material-symbols-outlined nav-icon">category</span>
           <span className="nav-label">Categorías</span>
         </NavLink>
+        <NavLink
+          to="/admin/users"
+          className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
+          onClick={closeSidebar}
+        >
+          <span className="material-symbols-outlined nav-icon">group</span>
+          <span className="nav-label">Usuarios</span>
+        </NavLink>
         <NavLink 
           to="/admin/profile" 
           className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
