@@ -7,6 +7,7 @@ import {
   Navigate,
   Route,
   Routes,
+  useLocation,
   useNavigate,
   useParams,
   useSearchParams,
@@ -75,6 +76,9 @@ import Profile from './pages/Profile/Profile';
 import NotFound from './pages/NotFound/NotFound';
 import Sidebar from './components/organisms/Sidebar/Sidebar';
 import Header from './components/organisms/Header/Header';
+import GridMotion from './components/GridMotion';
+import CircularText from './components/CircularText';
+import TargetCursor from './components/TargetCursor';
 import './App.css';
 
 interface AppState {
@@ -171,6 +175,7 @@ const PageWrapper = ({ children }: { children: ReactNode }) => (
 // STOREFRONT LAYOUT AND WRAPPER
 function Layout() {
   const { cart, user } = useAppState();
+  const location = useLocation();
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -254,6 +259,20 @@ function Layout() {
     }
   }
 
+  const isLoginPage = location.pathname === '/login';
+
+  if (isLoginPage) {
+    return (
+      <main className="store-main no-layout">
+        <AnimatePresence mode="wait">
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+          </Routes>
+        </AnimatePresence>
+      </main>
+    );
+  }
+
   return (
     <div className="store-shell">
       <header className="store-header">
@@ -267,7 +286,12 @@ function Layout() {
         </button>
 
         <Link to="/home" className="brand-link">
-          <ShoppingBag size={24} className="brand-logo-icon" />
+          <CircularText
+            text="Pediloo*Web-1-Final*"
+            onHover="goBonkers"
+            spinDuration={20}
+            className="brand-logo-circular"
+          />
           <span>pediloo</span>
         </Link>
 
@@ -455,7 +479,12 @@ function Layout() {
             >
               <div className="drawer-header">
                 <Link to="/home" className="brand-link" onClick={() => setIsMobileNavOpen(false)}>
-                  <ShoppingBag size={24} className="brand-logo-icon" />
+                  <CircularText
+                    text="Pediloo*Web-1-Final*"
+                    onHover="goBonkers"
+                    spinDuration={20}
+                    className="brand-logo-circular"
+                  />
                   <span>pediloo</span>
                 </Link>
                 <button onClick={() => setIsMobileNavOpen(false)} className="close-drawer-btn" aria-label="Cerrar menú">
@@ -1282,6 +1311,38 @@ function CheckoutPage() {
   );
 }
 
+// FOOD IMAGES FOR GRID MOTION
+const foodImages = [
+  "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&auto=format&fit=crop&q=60", // burger
+  "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&auto=format&fit=crop&q=60", // pizza
+  "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&auto=format&fit=crop&q=60", // salad
+  "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=400&auto=format&fit=crop&q=60", // sushi
+  "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&auto=format&fit=crop&q=60", // tacos
+  "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&auto=format&fit=crop&q=60", // pasta
+  "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400&auto=format&fit=crop&q=60", // donut
+  "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&auto=format&fit=crop&q=60", // pancakes
+  "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&auto=format&fit=crop&q=60", // ramen
+  "https://images.unsplash.com/photo-1544025162-d76694265947?w=400&auto=format&fit=crop&q=60", // steak
+  "https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=400&auto=format&fit=crop&q=60", // ice cream
+  "https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=400&auto=format&fit=crop&q=60", // toast
+  "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=400&auto=format&fit=crop&q=60", // sandwich
+  "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&auto=format&fit=crop&q=60", // pasta salad
+  "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&auto=format&fit=crop&q=60", // bbq
+  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&auto=format&fit=crop&q=60", // salmon bowl
+  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&auto=format&fit=crop&q=60", // chicken
+  "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400&auto=format&fit=crop&q=60", // fruit platter
+  "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=400&auto=format&fit=crop&q=60", // soup
+  "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=400&auto=format&fit=crop&q=60", // cake
+  "https://images.unsplash.com/photo-1506084868230-bb9d95c24759?w=400&auto=format&fit=crop&q=60", // waffle
+  "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?w=400&auto=format&fit=crop&q=60", // fries
+  "https://images.unsplash.com/photo-1529042410759-befb1204b468?w=400&auto=format&fit=crop&q=60", // meatballs
+  "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400&auto=format&fit=crop&q=60", // gyozas
+  "https://images.unsplash.com/photo-1541832676-9b763b0239ab?w=400&auto=format&fit=crop&q=60", // bread
+  "https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&auto=format&fit=crop&q=60", // cheeseburger
+  "https://images.unsplash.com/photo-1585238342024-78d387f4a707?w=400&auto=format&fit=crop&q=60", // pizza slice
+  "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400&auto=format&fit=crop&q=60", // cupcakes
+];
+
 // STOREFRONT AUTHENTICATION
 function LoginPage() {
   const { refresh } = useAppState();
@@ -1305,21 +1366,106 @@ function LoginPage() {
 
   return (
     <PageWrapper>
-      <AuthLayout title="Iniciar sesión" subtitle="Accede a tu cuenta pediloo">
-        <form className="auth-form" onSubmit={handleSubmit}>
-          {error && <p className="form-error">{error}</p>}
-          <label>
-            Email
-            <input name="email" type="email" required placeholder="tu@email.com" />
-          </label>
-          <label>
-            Contraseña
-            <input name="password" type="password" required placeholder="••••••••" />
-          </label>
-          <button className="primary-btn">Entrar</button>
-          <Link to="/register" className="auth-switch-link">¿No tienes cuenta? Regístrate</Link>
-        </form>
-      </AuthLayout>
+      <main className="flex-grow flex flex-col md:flex-row h-screen w-full bg-surface text-on-surface">
+        {/* Left Side: WebGL Visual Area (60%) */}
+        <section className="hidden md:block md:w-[60%] relative overflow-hidden bg-primary-container">
+          <div className="absolute inset-0 w-full h-full opacity-60">
+            <GridMotion items={foodImages} gradientColor="#2D5A4C" />
+          </div>
+          
+          <div className="absolute inset-0 flex flex-col justify-center px-margin-desktop bg-gradient-to-r from-primary/40 to-transparent pointer-events-none">
+            <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <CircularText
+                text="Pediloo*Web-1-Final*"
+                onHover="goBonkers"
+                spinDuration={20}
+                className="login-logo-circular"
+              />
+              <div className="flex items-center gap-3 mb-6">
+                <span className="material-symbols-outlined text-primary-fixed text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>restaurant</span>
+                <h1 className="font-headline-lg text-headline-lg text-white">Pediloo</h1>
+              </div>
+              <p className="font-headline-md text-headline-md text-white/90 max-w-md leading-tight">
+                Comida deliciosa al alcance de tus dedos.
+              </p>
+              <div className="mt-12 h-1 w-24 bg-primary-fixed rounded-full"></div>
+            </div>
+          </div>
+          
+          {/* Decorative texture overlay */}
+          <div className="absolute inset-0 pointer-events-none mix-blend-overlay opacity-20" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/asfalt-light.png')" }}></div>
+        </section>
+
+        {/* Right Side: Login Form (40%) */}
+        <section className="w-full md:w-[40%] bg-surface flex flex-col justify-center items-center px-margin-mobile md:px-margin-desktop py-12 relative z-10 shadow-[-20px_0px_60px_rgba(0,0,0,0.05)]">
+          {/* Mobile Logo */}
+          <div className="md:hidden mb-12 flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>restaurant</span>
+            <span className="font-headline-md text-headline-md text-primary font-semibold">Pediloo</span>
+          </div>
+
+          <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <header className="mb-10">
+              <h2 className="font-headline-md text-headline-md text-primary mb-2">Iniciar sesión</h2>
+              <p className="font-body-lg text-body-lg text-secondary">Accede a tu cuenta pediloo para disfrutar de lo mejor.</p>
+            </header>
+
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              {error && <p className="text-error font-body-sm mb-4" style={{ color: 'var(--md-sys-color-error)' }}>{error}</p>}
+              
+              <div className="space-y-2">
+                <label className="block font-label-md text-label-md text-on-surface-variant" htmlFor="email">Email</label>
+                <input 
+                  className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body-lg text-body-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" 
+                  id="email" 
+                  name="email" 
+                  placeholder="tu@email.com" 
+                  type="email"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="block font-label-md text-label-md text-on-surface-variant" htmlFor="password">Contraseña</label>
+                  <a className="font-label-sm text-label-sm text-primary hover:underline transition-all" href="#">¿Olvidaste tu contraseña?</a>
+                </div>
+                <input 
+                  className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body-lg text-body-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" 
+                  id="password" 
+                  name="password" 
+                  placeholder="••••••••" 
+                  type="password"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center gap-2 py-2">
+                <input className="w-4 h-4 text-primary border-outline-variant rounded focus:ring-primary" id="remember" type="checkbox"/>
+                <label className="font-body-sm text-body-sm text-on-surface-variant" htmlFor="remember">Recordarme en este dispositivo</label>
+              </div>
+
+              <button className="w-full py-4 bg-primary text-on-primary font-label-md text-label-md rounded-lg shadow-lg hover:bg-primary-container hover:text-on-primary-container transition-all transform hover:-translate-y-0.5 active:translate-y-0" type="submit">
+                Entrar
+              </button>
+            </form>
+
+            <div className="mt-8 pt-8 border-t border-outline-variant text-center">
+              <p className="font-body-sm text-body-sm text-secondary">
+                ¿No tienes cuenta? 
+                <Link className="font-label-md text-label-md text-primary hover:underline ml-1" to="/register">Regístrate</Link>
+              </p>
+            </div>
+          </div>
+
+          {/* Language/Meta Links Footer-Mini */}
+          <div className="absolute bottom-8 flex gap-6 text-outline font-label-sm text-label-sm">
+            <a className="hover:text-primary" href="#">Privacidad</a>
+            <a className="hover:text-primary" href="#">Términos</a>
+            <a className="hover:text-primary" href="#">Ayuda</a>
+          </div>
+        </section>
+      </main>
     </PageWrapper>
   );
 }
@@ -1578,13 +1724,36 @@ function EmptyState({ title, text }: { title: string; text: string }) {
   );
 }
 
+function RouteCursor() {
+  const { pathname } = useLocation();
+  const showCursor = pathname === '/home' || pathname.startsWith('/products');
+  if (!showCursor) return null;
+
+  return (
+    <TargetCursor
+      targetSelector="a, button, input, textarea, select, [role='button'], .cursor-target"
+      spinDuration={3.5}
+      hideDefaultCursor
+      parallaxOn
+      hoverDuration={1}
+      cursorColor="#A1D1BF"
+      cursorColorOnTarget="#538070"
+    />
+  );
+}
+
 // STOREFRONT FOOTER
 function Footer() {
   return (
     <footer className="store-footer">
       <div className="footer-left">
         <Link to="/home" className="footer-brand">
-          <ShoppingBag size={20} />
+          <CircularText
+            text="Pediloo*Web-1-Final*"
+            onHover="goBonkers"
+            spinDuration={20}
+            className="brand-logo-circular"
+          />
           <span>pediloo</span>
         </Link>
         <p className="footer-text">Comida deliciosa al alcance de tus dedos.</p>
@@ -1667,6 +1836,7 @@ export default function App() {
       <SnackbarProvider>
         <StoreProvider>
           <BrowserRouter>
+            <RouteCursor />
             <Routes>
               {/* Dashboard Layout */}
               <Route path="/admin/*" element={<AdminLayout />} />

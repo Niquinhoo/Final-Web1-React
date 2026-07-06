@@ -1,3 +1,4 @@
+
 /* ============================================================================
    Material Design 3 — Design Token Foundation
    Single source of truth for color, shape, typography, elevation, spacing.
@@ -459,4 +460,14 @@ code {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Custom styles for the Login Page layout */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
