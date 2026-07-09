@@ -454,6 +454,7 @@ function Layout() {
           </div>
           {user?.adminFlag && (
             <Link to="/admin/dashboard" className="admin-shortcut-btn" title="Panel Administrador">
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>dashboard</span>
               Admin
             </Link>
           )}

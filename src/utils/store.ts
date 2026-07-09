@@ -479,7 +479,10 @@ export function addProductToCart(productId: unknown): boolean {
   const id = String(product.id);
   const existing = cart.find((item) => item.productId === id);
 
-  if (existing) existing.quantity += 1;
+  if (existing) {
+    if (existing.quantity >= product.stock) return false;
+    existing.quantity += 1;
+  }
   else cart.push({ productId: id, quantity: 1 });
 
   saveCartLines(cart);
@@ -491,6 +494,8 @@ export function updateProductQuantity(productId: unknown, delta: number): boolea
   const id = String(productId);
   const index = cart.findIndex((item) => item.productId === id);
   if (index === -1) return false;
+  const product = getProductById(productId);
+  if (delta > 0 && (!product || cart[index].quantity >= product.stock)) return false;
 
   cart[index].quantity += delta;
   if (cart[index].quantity <= 0) cart.splice(index, 1);
@@ -811,6 +816,14 @@ export function getUserOrders(userId?: number): Order[] {
 export function createOrderFromCart(userId: number | null, discount?: OrderDiscount | null): Order | undefined {
   const cart = getCartDetail();
   if (cart.items.length === 0) return undefined;
+  const products = getAllProducts();
+  const itemsByProductId = new Map(cart.items.map((item) => [Number(item.productId), item]));
+  const hasEnoughStock = products.every((product) => {
+    const item = itemsByProductId.get(product.id);
+    if (!item) return true;
+    return product.stock >= item.quantity;
+  });
+  if (!hasEnoughStock) return undefined;
 
   const orders = getOrders();
   const discountAmount = Math.min(discount?.amount || 0, cart.summary.total);
@@ -831,6 +844,12 @@ export function createOrderFromCart(userId: number | null, discount?: OrderDisco
     })),
   };
 
+  saveProducts(products.map((product) => {
+    const item = itemsByProductId.get(product.id);
+    if (!item) return product;
+    const stock = product.stock - item.quantity;
+    return { ...product, stock, status: statusFromStock(stock) };
+  }));
   saveOrders([...orders, order]);
   clearCart();
   return order;

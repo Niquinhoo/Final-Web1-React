@@ -356,14 +356,22 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 99px;
   background: #2a6053;
   color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
 }
 
 .admin-shortcut-btn:hover {
   background: #1f483e;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(42, 96, 83, 0.35);
 }
 
 .store-main {

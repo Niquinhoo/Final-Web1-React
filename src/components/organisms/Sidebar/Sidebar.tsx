@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import './Sidebar.css';
 
 interface SidebarProps {
@@ -62,6 +62,17 @@ export default function Sidebar({ isSidebarOpen, closeSidebar }: SidebarProps) {
           <span className="nav-label">Perfil</span>
         </NavLink>
       </nav>
+      <div className="sidebar-divider" />
+      <div className="sidebar-footer">
+        <Link 
+          to="/home" 
+          className="nav-item back-to-store-btn"
+          onClick={closeSidebar}
+        >
+          <span className="material-symbols-outlined nav-icon">storefront</span>
+          <span className="nav-label">Volver a la Tienda</span>
+        </Link>
+      </div>
     </aside>
   );
 }

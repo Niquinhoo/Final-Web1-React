@@ -57,11 +57,11 @@
   justify-content: center;
   vertical-align: middle;
   line-height: 1;
-  gap: var(--md-sys-spacing-2);
+  gap: 10px; /* Increased from var(--md-sys-spacing-2) for readability */
   height: var(--md-sys-spacing-12);
-  padding: 0 var(--md-sys-spacing-6);
-  font-size: var(--md-sys-typescale-label-large-size);
-  font-weight: 600;
+  padding: 0 28px; /* Increased from var(--md-sys-spacing-6) to make buttons wider */
+  font-size: 13px; /* Reduced from label-large-size to give text more breathing room */
+  font-weight: 700;
   text-decoration: none;
   border-radius: var(--md-sys-shape-corner-full);
   cursor: pointer;
@@ -70,7 +70,8 @@
   box-sizing: border-box;
   border: none;
   font-family: var(--sans);
-  transition: box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+  letter-spacing: 0.04em; /* Extra letter spacing for premium look */
+  transition: all var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
 }
 
 .md3-btn:focus-visible {
@@ -193,10 +194,13 @@
 
 /* Small button size */
 .btn-sm {
-  height: 36px;
-  padding: 0 var(--md-sys-spacing-3);
-  font-size: var(--md-sys-typescale-label-medium-size);
-  gap: var(--md-sys-spacing-1);
+  height: 40px; /* Comfortable touch target height */
+  padding: 0 var(--md-sys-spacing-5); /* Generous padding to create white space */
+  font-size: 11.5px; /* Smaller font size to give text breathing room inside */
+  font-weight: 700;
+  text-transform: uppercase; /* Uppercase combined with small font-size makes it extremely clean and premium */
+  letter-spacing: 0.06em; /* Extra spacing for enhanced legibility of uppercase text */
+  gap: var(--md-sys-spacing-2);
 }
 
 .btn-sm .icon-btn {

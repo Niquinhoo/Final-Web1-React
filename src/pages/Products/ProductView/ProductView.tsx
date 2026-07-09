@@ -403,11 +403,11 @@ export default function ProductView() {
               />
             </div>
 
-            <div className="form-btn-actions">
-              <Button variant="outlined" onClick={handleCancel} disabled={loading}>
+            <div className="form-btn-actions centered-btn-actions">
+              <Button variant="outlined" icon="close" onClick={handleCancel} disabled={loading}>
                 Cancelar
               </Button>
-              <Button variant="filled" type="submit" disabled={loading}>
+              <Button variant="filled" type="submit" icon={isEditMode ? "save" : "add"} disabled={loading}>
                 {isEditMode ? 'Guardar Cambios' : 'Crear Producto'}
               </Button>
             </div>
