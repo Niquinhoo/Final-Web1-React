@@ -81,6 +81,7 @@ import DotCursor from './components/DotCursor';
 import ClickSpark from './components/ClickSpark';
 import BorderGlow from './components/BorderGlow';
 import StaggeredMenu from './components/StaggeredMenu';
+import { ImageZoomModal } from './components/molecules';
 import './App.css';
 
 interface AppState {
@@ -859,6 +860,7 @@ function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [related, setRelated] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
 
   useEffect(() => {
     async function loadProductDetail() {
@@ -907,8 +909,12 @@ function ProductDetailPage() {
   return (
     <PageWrapper>
       <section className="product-detail">
-        <div className="product-gallery">
+        <div className="product-gallery clickable-gallery" onClick={() => setIsZoomOpen(true)}>
           <img src={product.src} alt={product.title} />
+          <div className="gallery-hover-overlay">
+            <span className="material-symbols-outlined">zoom_in</span>
+            <span>Click para ampliar</span>
+          </div>
         </div>
         <div className="product-info">
           <Link to="/products" className="back-link">
@@ -930,6 +936,13 @@ function ProductDetailPage() {
       </section>
 
       {related.length > 0 && <ProductSection title="Productos relacionados" products={related} />}
+
+      <ImageZoomModal
+        isOpen={isZoomOpen}
+        onClose={() => setIsZoomOpen(false)}
+        src={product.src}
+        alt={product.title}
+      />
     </PageWrapper>
   );
 }
