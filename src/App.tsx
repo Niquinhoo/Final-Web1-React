@@ -78,7 +78,9 @@ import Sidebar from './components/organisms/Sidebar/Sidebar';
 import Header from './components/organisms/Header/Header';
 import GridMotion from './components/GridMotion';
 import CircularText from './components/CircularText';
-import TargetCursor from './components/TargetCursor';
+import DotCursor from './components/DotCursor';
+import ClickSpark from './components/ClickSpark';
+import BorderGlow from './components/BorderGlow';
 import './App.css';
 
 interface AppState {
@@ -748,18 +750,16 @@ function ProductSection({ title, products }: { title: string; products: Product[
 
 function ProductCard({ product }: { product: Product }) {
   const { refresh } = useAppState();
+  const { theme } = useTheme();
   const disabled = product.stock <= 0;
+  const isDarkMode = theme === 'dark';
 
   function handleAdd() {
     if (addProductToCart(product.id)) refresh();
   }
 
-  return (
-    <motion.article 
-      whileHover={{ y: -6 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="product-card"
-    >
+  const cardContent = (
+    <>
       <Link to={`/products/${product.id}`} className="product-image-link">
         <img src={product.src} alt={product.title} loading="lazy" />
         {product.isTopSeller && <span className="badge">Top ventas</span>}
@@ -778,6 +778,32 @@ function ProductCard({ product }: { product: Product }) {
           {disabled ? 'Sin stock' : 'Agregar'}
         </button>
       </div>
+    </>
+  );
+
+  return (
+    <motion.article 
+      whileHover={{ y: -6 }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      className={`product-card ${isDarkMode ? 'glow-active' : ''}`}
+    >
+      {isDarkMode ? (
+        <BorderGlow
+          edgeSensitivity={30}
+          glowColor="160 80 50"
+          backgroundColor="#1a1e1c"
+          borderRadius={12}
+          glowRadius={40}
+          glowIntensity={1.0}
+          coneSpread={25}
+          animated={false}
+          colors={['#3bb393', '#2a6053', '#c75d3a']}
+        >
+          {cardContent}
+        </BorderGlow>
+      ) : (
+        cardContent
+      )}
     </motion.article>
   );
 }
@@ -1727,19 +1753,23 @@ function EmptyState({ title, text }: { title: string; text: string }) {
 
 function RouteCursor() {
   const { pathname } = useLocation();
-  const showCursor = pathname === '/home' || pathname.startsWith('/products');
+  const showCursor = !pathname.startsWith('/admin');
   if (!showCursor) return null;
 
   return (
-    <TargetCursor
-      targetSelector="a, button, input, textarea, select, [role='button'], .cursor-target"
-      spinDuration={3.5}
-      hideDefaultCursor
-      parallaxOn
-      hoverDuration={1}
-      cursorColor="#A1D1BF"
-      cursorColorOnTarget="#538070"
-    />
+    <>
+      <DotCursor
+        dotSize={8}
+        hoverScale={2.5}
+      />
+      <ClickSpark
+        sparkColor="#48f7c6"
+        sparkSize={6}
+        sparkRadius={20}
+        sparkCount={15}
+        duration={400}
+      />
+    </>
   );
 }
 

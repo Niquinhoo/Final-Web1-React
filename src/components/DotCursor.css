@@ -1,0 +1,33 @@
+.dot-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  will-change: transform;
+
+  /* Fixed base color: beautiful sage/mint brand teal-green */
+  background-color: #3bb393;
+
+  /* Smooth transition for hover effects */
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover state when cursor is over interactive elements */
+.dot-cursor.is-hovering {
+  /* Brighter green/teal when active */
+  background-color: #48f7c6;
+  
+  /* Bright, premium neon glow shadow */
+  box-shadow: 0 0 10px rgba(72, 247, 198, 0.8), 
+              0 0 4px rgba(72, 247, 198, 0.5);
+}
+
+/* Hide default cursor on body and all descendants when the custom cursor is active */
+body.custom-cursor-active,
+body.custom-cursor-active * {
+  cursor: none !important;
+}
