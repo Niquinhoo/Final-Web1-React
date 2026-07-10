@@ -15,6 +15,7 @@
   border: 1px solid rgb(255 255 255 / 15%);
   background: var(--card-bg, #120F17);
   overflow: visible;
+  padding: 1px; /* Inset content by 1px to expose the border */
   height: 100%; /* Match grid element height */
   box-shadow:
     rgba(0, 0, 0, 0.1) 0px 1px 2px,
@@ -45,6 +46,8 @@
 
 /* colored mesh-gradient border */
 .border-glow-card::before {
+  z-index: -1;
+  pointer-events: none;
   border: 1px solid transparent;
   background:
     linear-gradient(var(--card-bg, #120F17) 0 100%) padding-box,
@@ -72,6 +75,8 @@
 
 /* colored mesh-gradient background fill near edges */
 .border-glow-card::after {
+  z-index: -1;
+  pointer-events: none;
   border: 1px solid transparent;
   background:
     var(--gradient-one, radial-gradient(at 80% 55%, hsla(268, 100%, 76%, 1) 0px, transparent 50%)) padding-box,
@@ -140,4 +145,5 @@
   overflow: hidden; /* Prevent child image/content bleeding */
   z-index: 1;
   height: 100%; /* Stretch inner container */
+  border-radius: inherit; /* Inherit rounded corners from card */
 }
