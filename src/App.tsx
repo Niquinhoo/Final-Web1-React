@@ -30,7 +30,6 @@ import {
   HelpCircle,
   Sun,
   Moon,
-  Menu,
   X,
 } from 'lucide-react';
 import {
@@ -76,11 +75,12 @@ import Profile from './pages/Profile/Profile';
 import NotFound from './pages/NotFound/NotFound';
 import Sidebar from './components/organisms/Sidebar/Sidebar';
 import Header from './components/organisms/Header/Header';
-import GridMotion from './components/GridMotion';
+import Cubes from './components/Cubes';
 import CircularText from './components/CircularText';
 import DotCursor from './components/DotCursor';
 import ClickSpark from './components/ClickSpark';
 import BorderGlow from './components/BorderGlow';
+import StaggeredMenu from './components/StaggeredMenu';
 import './App.css';
 
 interface AppState {
@@ -261,14 +261,15 @@ function Layout() {
     }
   }
 
-  const isLoginPage = location.pathname === '/login';
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
-  if (isLoginPage) {
+  if (isAuthPage) {
     return (
       <main className="store-main no-layout">
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
           </Routes>
         </AnimatePresence>
       </main>
@@ -283,8 +284,11 @@ function Layout() {
           className="store-mobile-menu-btn"
           onClick={() => setIsMobileNavOpen(true)}
           aria-label="Abrir navegación"
+          aria-expanded={isMobileNavOpen}
+          aria-controls="store-mobile-navigation"
         >
-          <Menu size={24} />
+          <span>Menú</span>
+          <span className="store-mobile-menu-icon" aria-hidden="true" />
         </button>
 
         <Link to="/home" className="brand-link">
@@ -463,36 +467,19 @@ function Layout() {
         </div>
       </header>
       
-      <AnimatePresence>
-        {isMobileNavOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="store-mobile-nav-backdrop"
-              onClick={() => setIsMobileNavOpen(false)}
-            />
-            <motion.div
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'tween', duration: 0.25 }}
-              className="store-mobile-nav-drawer"
-            >
+      <StaggeredMenu open={isMobileNavOpen} onClose={() => setIsMobileNavOpen(false)}>
               <div className="drawer-header">
-                <Link to="/home" className="brand-link" onClick={() => setIsMobileNavOpen(false)}>
-                  <CircularText
-                    text="Pediloo*Web-1-Final*"
-                    onHover="goBonkers"
-                    spinDuration={20}
-                    className="brand-logo-circular"
-                  />
-                  <span>pediloo</span>
-                </Link>
-                <button onClick={() => setIsMobileNavOpen(false)} className="close-drawer-btn" aria-label="Cerrar menú">
-                  <X size={24} />
-                </button>
+                <div className="staggered-menu-reveal-wrap">
+                  <Link to="/home" className="brand-link staggered-menu-reveal" onClick={() => setIsMobileNavOpen(false)}>
+                    <CircularText
+                      text="Pediloo*Web-1-Final*"
+                      onHover="goBonkers"
+                      spinDuration={20}
+                      className="brand-logo-circular"
+                    />
+                    <span>pediloo</span>
+                  </Link>
+                </div>
               </div>
 
               <div className="drawer-search-wrapper">
@@ -545,9 +532,9 @@ function Layout() {
               </div>
 
               <nav className="drawer-nav">
-                <NavLink to="/home" onClick={() => setIsMobileNavOpen(false)}>Inicio</NavLink>
-                <NavLink to="/products" onClick={() => setIsMobileNavOpen(false)}>Productos</NavLink>
-                <NavLink to="/categories" onClick={() => setIsMobileNavOpen(false)}>Categorias</NavLink>
+                <div className="staggered-menu-reveal-wrap"><NavLink className="staggered-menu-reveal" to="/home" onClick={() => setIsMobileNavOpen(false)}>Inicio</NavLink></div>
+                <div className="staggered-menu-reveal-wrap"><NavLink className="staggered-menu-reveal" to="/products" onClick={() => setIsMobileNavOpen(false)}>Productos</NavLink></div>
+                <div className="staggered-menu-reveal-wrap"><NavLink className="staggered-menu-reveal" to="/categories" onClick={() => setIsMobileNavOpen(false)}>Categorías</NavLink></div>
               </nav>
 
               <div className="drawer-footer">
@@ -584,10 +571,7 @@ function Layout() {
                   </div>
                 )}
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      </StaggeredMenu>
 
       <main className="store-main">
         <AnimatePresence mode="wait">
@@ -603,8 +587,6 @@ function Layout() {
             <Route path="/search" element={<SearchPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="/profile" element={<Navigate to="/account" replace />} />
             <Route path="*" element={<NotFound />} />
@@ -1338,37 +1320,46 @@ function CheckoutPage() {
   );
 }
 
-// FOOD IMAGES FOR GRID MOTION
-const foodImages = [
-  "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&auto=format&fit=crop&q=60", // burger
-  "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&auto=format&fit=crop&q=60", // pizza
-  "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&auto=format&fit=crop&q=60", // salad
-  "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=400&auto=format&fit=crop&q=60", // sushi
-  "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&auto=format&fit=crop&q=60", // tacos
-  "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&auto=format&fit=crop&q=60", // pasta
-  "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400&auto=format&fit=crop&q=60", // donut
-  "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&auto=format&fit=crop&q=60", // pancakes
-  "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&auto=format&fit=crop&q=60", // ramen
-  "https://images.unsplash.com/photo-1544025162-d76694265947?w=400&auto=format&fit=crop&q=60", // steak
-  "https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=400&auto=format&fit=crop&q=60", // ice cream
-  "https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=400&auto=format&fit=crop&q=60", // toast
-  "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=400&auto=format&fit=crop&q=60", // sandwich
-  "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&auto=format&fit=crop&q=60", // pasta salad
-  "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&auto=format&fit=crop&q=60", // bbq
-  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&auto=format&fit=crop&q=60", // salmon bowl
-  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&auto=format&fit=crop&q=60", // chicken
-  "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400&auto=format&fit=crop&q=60", // fruit platter
-  "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=400&auto=format&fit=crop&q=60", // soup
-  "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=400&auto=format&fit=crop&q=60", // cake
-  "https://images.unsplash.com/photo-1506084868230-bb9d95c24759?w=400&auto=format&fit=crop&q=60", // waffle
-  "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?w=400&auto=format&fit=crop&q=60", // fries
-  "https://images.unsplash.com/photo-1529042410759-befb1204b468?w=400&auto=format&fit=crop&q=60", // meatballs
-  "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400&auto=format&fit=crop&q=60", // gyozas
-  "https://images.unsplash.com/photo-1541832676-9b763b0239ab?w=400&auto=format&fit=crop&q=60", // bread
-  "https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&auto=format&fit=crop&q=60", // cheeseburger
-  "https://images.unsplash.com/photo-1585238342024-78d387f4a707?w=400&auto=format&fit=crop&q=60", // pizza slice
-  "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400&auto=format&fit=crop&q=60", // cupcakes
-];
+function AuthVisualPanel() {
+  return (
+    <section className="auth-visual hidden md:block md:w-[60%] relative overflow-hidden">
+      <div className="auth-cubes-stage absolute inset-0" aria-hidden="true">
+        <Cubes
+          gridSize={9}
+          maxAngle={75}
+          radius={3}
+          cellGap={4}
+          borderStyle="1px solid rgba(205, 232, 220, 0.58)"
+          faceColor="#18211e"
+          shadow="0 0 8px rgba(0, 0, 0, 0.18)"
+          autoAnimate
+          rippleOnClick
+          rippleColor="#d7efe4"
+          rippleSpeed={1.8}
+        />
+      </div>
+
+      <div className="absolute inset-0 flex flex-col justify-center px-margin-desktop pointer-events-none">
+        <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <CircularText
+            text="Pediloo*Web-1-Final*"
+            onHover="goBonkers"
+            spinDuration={20}
+            className="auth-logo-circular"
+          />
+          <div className="flex items-center gap-3 mb-6">
+            <span className="material-symbols-outlined text-primary-fixed text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>restaurant</span>
+            <h1 className="font-headline-lg text-headline-lg text-white">Pediloo</h1>
+          </div>
+          <p className="font-headline-md text-headline-md text-white/90 max-w-md leading-tight">
+            Comida deliciosa al alcance de tus dedos.
+          </p>
+          <div className="mt-12 h-1 w-24 bg-primary-fixed rounded-full"></div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 // STOREFRONT AUTHENTICATION
 function LoginPage() {
@@ -1393,35 +1384,8 @@ function LoginPage() {
 
   return (
     <PageWrapper>
-      <main className="flex-grow flex flex-col md:flex-row h-screen w-full bg-surface text-on-surface">
-        {/* Left Side: WebGL Visual Area (60%) */}
-        <section className="hidden md:block md:w-[60%] relative overflow-hidden bg-primary-container">
-          <div className="absolute inset-0 w-full h-full opacity-60">
-            <GridMotion items={foodImages} gradientColor="#2D5A4C" />
-          </div>
-          
-          <div className="absolute inset-0 flex flex-col justify-center px-margin-desktop bg-gradient-to-r from-primary/40 to-transparent pointer-events-none">
-            <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <CircularText
-                text="Pediloo*Web-1-Final*"
-                onHover="goBonkers"
-                spinDuration={20}
-                className="login-logo-circular"
-              />
-              <div className="flex items-center gap-3 mb-6">
-                <span className="material-symbols-outlined text-primary-fixed text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>restaurant</span>
-                <h1 className="font-headline-lg text-headline-lg text-white">Pediloo</h1>
-              </div>
-              <p className="font-headline-md text-headline-md text-white/90 max-w-md leading-tight">
-                Comida deliciosa al alcance de tus dedos.
-              </p>
-              <div className="mt-12 h-1 w-24 bg-primary-fixed rounded-full"></div>
-            </div>
-          </div>
-          
-          {/* Decorative texture overlay */}
-          <div className="absolute inset-0 pointer-events-none mix-blend-overlay opacity-20" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/asfalt-light.png')" }}></div>
-        </section>
+      <main className="auth-page-layout flex-grow flex flex-col md:flex-row w-full bg-surface text-on-surface">
+        <AuthVisualPanel />
 
         {/* Right Side: Login Form (40%) */}
         <section className="w-full md:w-[40%] bg-surface flex flex-col justify-center items-center px-margin-mobile md:px-margin-desktop py-12 relative z-10 shadow-[-20px_0px_60px_rgba(0,0,0,0.05)]">
@@ -1480,16 +1444,9 @@ function LoginPage() {
             <div className="mt-8 pt-8 border-t border-outline-variant text-center">
               <p className="font-body-sm text-body-sm text-secondary">
                 ¿No tienes cuenta? 
-                <Link className="font-label-md text-label-md text-primary hover:underline ml-1" to="/register">Regístrate</Link>
+                <Link className="font-label-md text-label-md text-primary hover:underline ml-1" to="/register"> Regístrate</Link>
               </p>
             </div>
-          </div>
-
-          {/* Language/Meta Links Footer-Mini */}
-          <div className="absolute bottom-8 flex gap-6 text-outline font-label-sm text-label-sm">
-            <a className="hover:text-primary" href="#">Privacidad</a>
-            <a className="hover:text-primary" href="#">Términos</a>
-            <a className="hover:text-primary" href="#">Ayuda</a>
           </div>
         </section>
       </main>
@@ -1526,17 +1483,41 @@ function RegisterPage() {
 
   return (
     <PageWrapper>
-      <AuthLayout title="Crear cuenta" subtitle="Regístrate para guardar tus pedidos">
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <Field name="firstName" label="Nombre" value={values.firstName} error={errors.firstName} onChange={handleChange} placeholder="Nombre" />
-          <Field name="lastName" label="Apellido" value={values.lastName} error={errors.lastName} onChange={handleChange} placeholder="Apellido" />
-          <Field name="email" label="Email" type="email" value={values.email} error={errors.email} onChange={handleChange} placeholder="nombre@correo.com" />
-          <Field name="password" label="Contraseña" type="password" value={values.password} error={errors.password} onChange={handleChange} placeholder="Al menos 8 caracteres" />
-          <Field name="confirmPassword" label="Repetir contraseña" type="password" value={values.confirmPassword} error={errors.confirmPassword} onChange={handleChange} placeholder="Repetir contraseña" />
-          <button className="primary-btn">Crear cuenta</button>
-          <Link to="/login" className="auth-switch-link">¿Ya tienes cuenta? Inicia sesión</Link>
-        </form>
-      </AuthLayout>
+      <main className="auth-page-layout flex-grow flex flex-col md:flex-row w-full bg-surface text-on-surface">
+        <AuthVisualPanel />
+
+        <section className="w-full md:w-[40%] bg-surface flex flex-col justify-center items-center px-margin-mobile md:px-margin-desktop py-12 relative z-10 shadow-[-20px_0px_60px_rgba(0,0,0,0.05)]">
+          <div className="md:hidden mb-12 flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>restaurant</span>
+            <span className="font-headline-md text-headline-md text-primary font-semibold">Pediloo</span>
+          </div>
+
+          <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <header className="mb-10">
+              <h2 className="font-headline-md text-headline-md text-primary mb-2">Crear cuenta</h2>
+              <p className="font-body-lg text-body-lg text-secondary">Regístrate para guardar tus pedidos.</p>
+            </header>
+
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <Field name="firstName" label="Nombre" value={values.firstName} error={errors.firstName} onChange={handleChange} placeholder="Nombre" />
+              <Field name="lastName" label="Apellido" value={values.lastName} error={errors.lastName} onChange={handleChange} placeholder="Apellido" />
+              <Field name="email" label="Email" type="email" value={values.email} error={errors.email} onChange={handleChange} placeholder="nombre@correo.com" />
+              <Field name="password" label="Contraseña" type="password" value={values.password} error={errors.password} onChange={handleChange} placeholder="Al menos 8 caracteres" />
+              <Field name="confirmPassword" label="Repetir contraseña" type="password" value={values.confirmPassword} error={errors.confirmPassword} onChange={handleChange} placeholder="Repetir contraseña" />
+              <button className="w-full py-4 bg-primary text-on-primary font-label-md text-label-md rounded-lg shadow-lg transition-all transform" type="submit">
+                Crear cuenta
+              </button>
+            </form>
+
+            <div className="mt-8 pt-8 border-t border-outline-variant text-center">
+              <p className="font-body-sm text-body-sm text-secondary">
+                ¿Ya tienes cuenta?
+                <Link className="font-label-md text-label-md text-primary hover:underline ml-1" to="/login"> Inicia sesión</Link>
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
     </PageWrapper>
   );
 }
@@ -1559,24 +1540,22 @@ function Field({
   placeholder?: string;
 }) {
   return (
-    <label className="auth-field-label">
-      {label}
-      <input name={name} type={type} value={value} onChange={onChange} placeholder={placeholder} aria-invalid={Boolean(error)} required />
-      {error && <small className="form-error">{error}</small>}
-    </label>
-  );
-}
-
-function AuthLayout({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
-  return (
-    <section className="auth-layout">
-      <div className="auth-card animate-card">
-        <img src="/assets/logo.png" alt="Pediloo Logo" className="auth-logo" />
-        <h1>{title}</h1>
-        <p>{subtitle}</p>
-        {children}
-      </div>
-    </section>
+    <div className="space-y-2">
+      <label className="block font-label-md text-label-md text-on-surface-variant" htmlFor={name}>{label}</label>
+      <input
+        className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body-lg text-body-lg transition-all outline-none"
+        id={name}
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? `${name}-error` : undefined}
+        required
+      />
+      {error && <small id={`${name}-error`} className="form-error">{error}</small>}
+    </div>
   );
 }
 
