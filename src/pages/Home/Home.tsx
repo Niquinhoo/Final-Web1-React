@@ -106,8 +106,8 @@ export default function Home() {
   return (
     <div className="home-canvas">
       <div className="page-header">
-        <h2 className="display-lg">¡Hola {username}!</h2>
-        <p className="body-lg text-secondary-color">Bienvenido de nuevo. Esto es lo que está pasando en tu catálogo hoy.</p>
+        <h2 className="headline-md">¡Hola {username}!</h2>
+        <p className="body-sm text-secondary-color mt-1">Bienvenido de nuevo. Esto es lo que está pasando en tu catálogo hoy.</p>
       </div>
 
       <div className="stats-grid">

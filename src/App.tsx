@@ -69,6 +69,7 @@ import ProductView from './pages/Products/ProductView/ProductView';
 import CategoriesList from './pages/Categories/CategoriesList/CategoriesList';
 import CategoryView from './pages/Categories/CategoryView/CategoryView';
 import OrdersKanban from './pages/Orders/OrdersKanban/OrdersKanban';
+import Finances from './pages/Finances/Finances';
 import UsersList from './pages/Users/UsersList/UsersList';
 import UserView from './pages/Users/UserView/UserView';
 import Profile from './pages/Profile/Profile';
@@ -1838,6 +1839,7 @@ function AdminLayout() {
             <Route path="categories/new" element={<CategoryView />} />
             <Route path="categories/:id" element={<CategoryView />} />
             <Route path="orders" element={<OrdersKanban />} />
+            <Route path="finances" element={<Finances />} />
             <Route path="users" element={<UsersList />} />
             <Route path="users/new" element={<UserView />} />
             <Route path="users/:id" element={<UserView />} />
