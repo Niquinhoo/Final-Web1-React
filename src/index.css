@@ -245,6 +245,33 @@ body {
               color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
 }
 
+/* Native theme reveal; the SVG mask keeps the edge soft without extra JS. */
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition: none !important;
+}
+
+::view-transition-group(root) {
+  animation-duration: 1.15s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::view-transition-new(root) {
+  z-index: 1;
+  mask: url('/assets/theme-transition.svg') top left / 0 no-repeat;
+  animation: theme-mask-reveal 1.15s both;
+}
+
+::view-transition-old(root) {
+  z-index: 0;
+  animation: none;
+}
+
+@keyframes theme-mask-reveal {
+  to { mask-size: 200vmax; }
+}
+
 /* ===========================================================================
    MD3 Typography tokens (exposed as variables for reuse)
    ========================================================================== */

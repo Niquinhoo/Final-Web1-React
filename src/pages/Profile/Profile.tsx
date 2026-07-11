@@ -54,7 +54,7 @@ export default function Profile() {
     <div className="profile-canvas">
       <div className="profile-header-section">
         <h2 className="headline-md">Perfil de Administrador</h2>
-        <p className="body-md text-secondary-color mt-xs">Gestiona tu información personal y la configuración de tu cuenta.</p>
+        <p className="body-sm text-secondary-color mt-1">Gestiona tu información personal y la configuración de tu cuenta.</p>
       </div>
 
       <div className="profile-grid">

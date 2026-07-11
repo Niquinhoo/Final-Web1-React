@@ -10,7 +10,7 @@ export default function Sidebar({ isSidebarOpen, closeSidebar }: SidebarProps) {
   return (
     <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
       <div className="sidebar-logo">
-        <h2>Mi Ecommerce</h2>
+        <h2>Pediloo - Admin</h2>
       </div>
       <nav className="sidebar-nav">
         <NavLink 
@@ -44,6 +44,14 @@ export default function Sidebar({ isSidebarOpen, closeSidebar }: SidebarProps) {
         >
           <span className="material-symbols-outlined nav-icon">receipt_long</span>
           <span className="nav-label">Pedidos</span>
+        </NavLink>
+        <NavLink
+          to="/admin/finances"
+          className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
+          onClick={closeSidebar}
+        >
+          <span className="material-symbols-outlined nav-icon">monitoring</span>
+          <span className="nav-label">Finanzas</span>
         </NavLink>
         <NavLink
           to="/admin/users"

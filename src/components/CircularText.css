@@ -49,7 +49,7 @@
   color: #bcedda; /* primary-fixed light mint green color */
 }
 
-.circular-text.login-logo-circular {
+.circular-text.auth-logo-circular {
   width: clamp(132px, 14vw, 190px);
   height: clamp(132px, 14vw, 190px);
   margin: 0 0 28px;
@@ -57,7 +57,7 @@
   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
 }
 
-.circular-text.login-logo-circular span {
+.circular-text.auth-logo-circular span {
   font-size: clamp(14px, 1.35vw, 20px);
   font-weight: 900;
   letter-spacing: 0.04em;

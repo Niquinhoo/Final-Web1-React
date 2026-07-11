@@ -53,10 +53,22 @@ export function useTheme(): UseThemeResult {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setThemeState(prev => {
-      const next = prev === 'dark' ? 'light' : 'dark';
+    const switchTheme = () => {
+      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
       window.localStorage.setItem(STORAGE_KEY, next);
-      return next;
+      document.documentElement.setAttribute('data-theme', next);
+      document.documentElement.style.colorScheme = next;
+      setThemeState(next);
+    };
+
+    if (!document.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      switchTheme();
+      return;
+    }
+
+    document.documentElement.classList.add('theme-transitioning');
+    document.startViewTransition(switchTheme).finished.finally(() => {
+      document.documentElement.classList.remove('theme-transitioning');
     });
   }, []);
 

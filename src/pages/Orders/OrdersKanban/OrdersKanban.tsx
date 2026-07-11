@@ -60,8 +60,8 @@ export default function OrdersKanban() {
   return (
     <div className="orders-kanban-page">
       <div className="page-header">
-        <h2 className="display-lg">Pedidos recientes</h2>
-        <p className="body-lg text-secondary-color">Mové los pedidos entre estados para seguir la preparación.</p>
+        <h2 className="headline-md">Pedidos recientes</h2>
+        <p className="body-sm text-secondary-color mt-1">Mové los pedidos entre estados para seguir la preparación.</p>
       </div>
 
       {loading ? (

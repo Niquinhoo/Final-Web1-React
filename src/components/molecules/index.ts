@@ -9,3 +9,6 @@ export type { ConfirmOptions, DialogContextValue } from './Dialog/useDialog';
 export { SnackbarProvider } from './Snackbar/Snackbar';
 export { useSnackbar } from './Snackbar/useSnackbar';
 export type { SnackbarData, SnackbarContextValue } from './Snackbar/useSnackbar';
+
+export { default as ImageZoomModal } from './ImageZoomModal/ImageZoomModal';
+

@@ -15,10 +15,7 @@ interface Product {
   src?: string;
 }
 
-interface Category {
-  id: string | number;
-  name: string;
-}
+
 
 // Subcomponente local para controlar el estado de precarga e iconos fallback de la imagen (US7)
 function ProductRowImage({ src, alt }: { src?: string; alt: string }) {
@@ -87,7 +84,6 @@ function getChipColor(status: string) {
 export default function ProductsList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [totalCategories, setTotalCategories] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
 
@@ -119,14 +115,7 @@ export default function ProductsList() {
         setLoading(false);
       }
 
-      try {
-        const categoriesList = await apiFetch<Category[]>('/categories');
-        if (Array.isArray(categoriesList)) {
-          setTotalCategories(categoriesList.length);
-        }
-      } catch {
-        // Fallback silencioso
-      }
+
     }
 
     fetchProducts();
@@ -167,8 +156,7 @@ export default function ProductsList() {
     );
   });
 
-  const totalProducts = products.length;
-  const lowStockCount = products.filter(p => p.stock <= 12).length;
+
 
   return (
     <div className="products-canvas">
@@ -197,49 +185,7 @@ export default function ProductsList() {
         </div>
       </div>
 
-      <div className="products-summary-row">
-        <div className="products-summary-card card interactive">
-          <div className="card-top">
-            <span className="label-md text-secondary-color uppercase">Total de Productos</span>
-            <span className="material-symbols-outlined summary-card-icon primary-text">inventory_2</span>
-          </div>
-          <div className="card-bottom">
-            <span className="display-value">{totalProducts}</span>
-            <span className="trend-percentage-value success-text">
-              <span className="material-symbols-outlined">trending_up</span>
-              +12%
-            </span>
-          </div>
-        </div>
 
-        <div className="products-summary-card card interactive">
-          <div className="card-top">
-            <span className="label-md text-secondary-color uppercase">Stock Bajo</span>
-            <span className="material-symbols-outlined summary-card-icon error-text">warning</span>
-          </div>
-          <div className="card-bottom">
-            <span className="display-value">{lowStockCount}</span>
-            <span className="trend-percentage-value error-text">
-              <span className="material-symbols-outlined">trending_up</span>
-              +4
-            </span>
-          </div>
-        </div>
-
-        <div className="products-summary-card card interactive">
-          <div className="card-top">
-            <span className="label-md text-secondary-color uppercase">Categorías Activas</span>
-            <span className="material-symbols-outlined summary-card-icon">category</span>
-          </div>
-          <div className="card-bottom">
-            <span className="display-value">{totalCategories}</span>
-            <span className="trend-percentage-value text-secondary-color">
-              <span className="material-symbols-outlined">horizontal_rule</span>
-              0
-            </span>
-          </div>
-        </div>
-      </div>
 
       {filterType === 'low-stock' && (
         <div className="filter-badge-row" style={{ display: 'flex', gap: '8px', padding: '0 0 16px 8px', alignItems: 'center' }}>
