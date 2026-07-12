@@ -2,17 +2,17 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AreaSeries,
   ColorType,
-  HistogramSeries,
   createChart,
 } from 'lightweight-charts';
-import type { AreaData, HistogramData, Time } from 'lightweight-charts';
+import type { AreaData, Time } from 'lightweight-charts';
 import { apiFetch } from '../../utils/api';
 import type { Order, Product } from '../../utils/store';
+import { Card } from '../../components/atoms';
+import { useTheme } from '../../components/_md3/hooks';
+import { motion } from 'framer-motion';
 import './Finances.css';
 
 type Period = 'today' | '7days' | 'month' | 'year' | 'custom';
-type ChartKind = 'area' | 'histogram';
-type ChartPoint = AreaData<Time> | HistogramData<Time>;
 
 const ESTIMATED_COST_RATE = 0.65;
 const PERIODS: Array<{ value: Period; label: string }> = [
@@ -52,11 +52,6 @@ function getDateRange(period: Period, customStart: string, customEnd: string, no
 
 function formatCurrency(value: number): string {
   return value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
-}
-
-function chartTimeKey(time: Time): string {
-  if (typeof time === 'string' || typeof time === 'number') return String(time);
-  return `${time.year}-${String(time.month).padStart(2, '0')}-${String(time.day).padStart(2, '0')}`;
 }
 
 function calculateFinances(orders: Order[], products: Product[]) {
@@ -107,7 +102,29 @@ function calculateFinances(orders: Order[], products: Product[]) {
   };
 }
 
-function FinanceChart({ kind, data, labels = {} }: { kind: ChartKind; data: ChartPoint[]; labels?: Record<string, string> }) {
+interface FinanceChartProps {
+  data: AreaData<Time>[];
+  theme: string;
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const cleanHex = hex.replace('#', '').trim();
+  if (cleanHex.length === 3) {
+    const r = parseInt(cleanHex[0] + cleanHex[0], 16);
+    const g = parseInt(cleanHex[1] + cleanHex[1], 16);
+    const b = parseInt(cleanHex[2] + cleanHex[2], 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  if (cleanHex.length === 6) {
+    const r = parseInt(cleanHex.substring(0, 2), 16);
+    const g = parseInt(cleanHex.substring(2, 4), 16);
+    const b = parseInt(cleanHex.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return hex;
+}
+
+function FinanceChart({ data, theme }: FinanceChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -115,43 +132,227 @@ function FinanceChart({ kind, data, labels = {} }: { kind: ChartKind; data: Char
     if (!container) return;
 
     const styles = getComputedStyle(document.documentElement);
-    const textColor = styles.getPropertyValue('--md-sys-color-on-surface-variant').trim();
-    const outlineColor = styles.getPropertyValue('--md-sys-color-outline-variant').trim();
-    const gridColor = outlineColor.length === 7 ? `${outlineColor}66` : outlineColor;
+    const textColor = styles.getPropertyValue('--md-sys-color-on-surface-variant').trim() || '#44474f';
+    const primaryColor = styles.getPropertyValue('--md-sys-color-primary').trim() || '#0b57d0';
+    const outlineColor = styles.getPropertyValue('--md-sys-color-outline-variant').trim() || '#c4c6cf';
+    const gridColor = outlineColor.includes('rgba') ? outlineColor : `${outlineColor}22`;
+
     const chart = createChart(container, {
       autoSize: true,
       height: 280,
-      layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor, fontFamily: 'Plus Jakarta Sans, sans-serif', attributionLogo: false },
-      grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } },
+      layout: {
+        background: { type: ColorType.Solid, color: 'transparent' },
+        textColor,
+        fontFamily: 'Plus Jakarta Sans, sans-serif',
+      },
+      grid: {
+        vertLines: { color: gridColor, style: 2 },
+        horzLines: { color: gridColor, style: 2 },
+      },
       localization: { locale: 'es-AR', priceFormatter: formatCurrency },
       rightPriceScale: { borderVisible: false },
       timeScale: {
         borderVisible: false,
-        timeVisible: false,
-        ...(Object.keys(labels).length ? { tickMarkFormatter: (time: Time) => labels[chartTimeKey(time)] ?? '' } : {}),
+        timeVisible: true,
+        secondsVisible: false,
       },
     });
 
-    if (kind === 'area') {
-      const series = chart.addSeries(AreaSeries, {
-        lineColor: '#0b57d0',
-        topColor: 'rgba(11, 87, 208, 0.32)',
-        bottomColor: 'rgba(11, 87, 208, 0.02)',
-        lineWidth: 3,
-        lastValueVisible: false,
-        priceLineVisible: false,
-      });
-      series.setData(data as AreaData<Time>[]);
-    } else {
-      const series = chart.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, lastValueVisible: false, priceLineVisible: false });
-      series.setData(data as HistogramData<Time>[]);
-    }
+    const series = chart.addSeries(AreaSeries, {
+      lineColor: primaryColor,
+      topColor: hexToRgba(primaryColor, 0.24),
+      bottomColor: hexToRgba(primaryColor, 0.01),
+      lineWidth: 3,
+      lastValueVisible: false,
+      priceLineVisible: false,
+    });
 
+    series.setData(data);
     chart.timeScale().fitContent();
-    return () => chart.remove();
-  }, [data, kind, labels]);
 
-  return <div ref={containerRef} className="finance-chart" />;
+    const tooltip = document.createElement('div');
+    tooltip.className = 'finance-chart-tooltip';
+    tooltip.style.display = 'none';
+    container.appendChild(tooltip);
+
+    chart.subscribeCrosshairMove((param) => {
+      if (
+        param.point === undefined ||
+        !param.time ||
+        param.point.x < 0 ||
+        param.point.x > container.clientWidth ||
+        param.point.y < 0 ||
+        param.point.y > container.clientHeight
+      ) {
+        tooltip.style.display = 'none';
+        return;
+      }
+
+      const date = param.time;
+      const dataPoint = param.seriesData.get(series);
+      if (!dataPoint) {
+        tooltip.style.display = 'none';
+        return;
+      }
+
+      const value = (dataPoint as any).value ?? 0;
+      let dateStr = '';
+      if (typeof date === 'string') {
+        const parts = date.split('-');
+        if (parts.length === 3) {
+          const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+          dateStr = d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
+        } else {
+          dateStr = date;
+        }
+      } else {
+        dateStr = String(date);
+      }
+
+      tooltip.style.display = 'block';
+      tooltip.innerHTML = `
+        <div class="tooltip-date">${dateStr}</div>
+        <div class="tooltip-value">${formatCurrency(value)}</div>
+      `;
+
+      const tooltipWidth = 120;
+      const tooltipHeight = 50;
+      const x = param.point.x;
+      const y = param.point.y;
+
+      let left = x + 15;
+      if (left + tooltipWidth > container.clientWidth) {
+        left = x - tooltipWidth - 15;
+      }
+
+      let top = y - tooltipHeight - 15;
+      if (top < 0) {
+        top = y + 15;
+      }
+
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+    });
+
+    return () => {
+      chart.remove();
+      tooltip.remove();
+    };
+  }, [data, theme]);
+
+  return <div ref={containerRef} className="finance-chart" style={{ position: 'relative' }} />;
+}
+
+interface CategoryDonutChartProps {
+  categories: [string, number][];
+  totalRevenue: number;
+}
+
+function CategoryDonutChart({ categories, totalRevenue }: CategoryDonutChartProps) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const total = useMemo(() => categories.reduce((sum, [, val]) => sum + val, 0), [categories]);
+
+  const size = 180;
+  const strokeWidth = 16;
+  const radius = 65;
+  const center = size / 2;
+  const circumference = 2 * Math.PI * radius;
+
+  let accumulatedPercent = 0;
+  const slices = categories.map(([category, value], index) => {
+    const percent = total > 0 ? value / total : 0;
+    const strokeLength = percent * circumference;
+    const strokeOffset = circumference - strokeLength;
+    const angle = accumulatedPercent * 360 - 90;
+    accumulatedPercent += percent;
+
+    return {
+      category,
+      value,
+      percent,
+      strokeLength,
+      strokeOffset,
+      angle,
+      color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+    };
+  });
+
+  const activeSlice = hoveredIndex !== null ? slices[hoveredIndex] : null;
+
+  return (
+    <div className="donut-chart-container">
+      <div className="donut-chart-svg-wrap">
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <circle
+            cx={center}
+            cy={center}
+            r={radius}
+            fill="transparent"
+            stroke="var(--md-sys-color-surface-container-high)"
+            strokeWidth={strokeWidth - 2}
+          />
+          {slices.map((slice, index) => {
+            const isHovered = hoveredIndex === index;
+            return (
+              <circle
+                key={slice.category}
+                cx={center}
+                cy={center}
+                r={radius}
+                fill="transparent"
+                stroke={slice.color}
+                strokeWidth={isHovered ? strokeWidth + 4 : strokeWidth}
+                strokeDasharray={`${slice.strokeLength} ${circumference}`}
+                strokeDashoffset={0}
+                transform={`rotate(${slice.angle} ${center} ${center})`}
+                style={{
+                  transformOrigin: 'center',
+                  transition: 'stroke-width 0.25s var(--md-sys-motion-easing-standard), opacity 0.25s',
+                  cursor: 'pointer',
+                  opacity: hoveredIndex === null || isHovered ? 1 : 0.65,
+                }}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              />
+            );
+          })}
+        </svg>
+        <div className="donut-chart-center">
+          <span className="donut-center-label">
+            {activeSlice ? activeSlice.category : 'Ventas Totales'}
+          </span>
+          <strong className="donut-center-value">
+            {formatCurrency(activeSlice ? activeSlice.value : totalRevenue)}
+          </strong>
+          {activeSlice && (
+            <span className="donut-center-sub">
+              {Math.round(activeSlice.percent * 100)}% del total
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="donut-legend">
+        {slices.map((slice, index) => {
+          const isHovered = hoveredIndex === index;
+          return (
+            <div
+              key={slice.category}
+              className={`donut-legend-item ${isHovered ? 'active' : ''}`}
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
+              <i style={{ backgroundColor: slice.color }} />
+              <span className="legend-category">{slice.category}</span>
+              <span className="legend-percent">{Math.round(slice.percent * 100)}%</span>
+              <strong className="legend-value">{formatCurrency(slice.value)}</strong>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 if (import.meta.env.DEV) {
@@ -160,6 +361,7 @@ if (import.meta.env.DEV) {
 }
 
 export default function Finances() {
+  const { theme } = useTheme();
   const today = dateKey(new Date());
   const [period, setPeriod] = useState<Period>('month');
   const [customStart, setCustomStart] = useState(today.slice(0, 8) + '01');
@@ -195,15 +397,6 @@ export default function Finances() {
     () => stats.dailyRevenue.map(([time, value]) => ({ time, value })),
     [stats.dailyRevenue],
   );
-  const categoryChart = useMemo(() => {
-    const labels: Record<string, string> = {};
-    const data = stats.categories.map(([category, value], index) => {
-      const time = `2020-01-${String(index + 1).padStart(2, '0')}`;
-      labels[time] = category;
-      return { time, value, color: CATEGORY_COLORS[index % CATEGORY_COLORS.length] } as HistogramData<Time>;
-    });
-    return { data, labels };
-  }, [stats.categories]);
 
   const cards = [
     { label: 'Pedidos realizados', value: stats.orderCount.toLocaleString('es-AR'), icon: 'receipt_long', tone: 'blue' },
@@ -214,17 +407,43 @@ export default function Finances() {
     { label: 'Pedidos cancelados', value: stats.cancelledOrders.toLocaleString('es-AR'), icon: 'cancel', tone: 'red' },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 100, damping: 15 } },
+  };
+
   return (
-    <div className="finances-page">
+    <motion.div 
+      className="finances-page"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <header className="finances-header">
         <div>
           <span className="finances-eyebrow">Resumen del negocio</span>
-          <h2>Finanzas</h2>
-          <p>Facturación, rentabilidad y rendimiento de tus productos.</p>
+          <h2 className="headline-lg">Finanzas</h2>
+          <p className="body-md text-secondary-color mt-1">Facturación, rentabilidad y rendimiento de tus productos.</p>
         </div>
         <div className="period-filter" aria-label="Filtrar estadísticas por período">
           {PERIODS.map((option) => (
-            <button key={option.value} type="button" className={period === option.value ? 'active' : ''} aria-pressed={period === option.value} onClick={() => setPeriod(option.value)}>
+            <button 
+              key={option.value} 
+              type="button" 
+              className={period === option.value ? 'active' : ''} 
+              aria-pressed={period === option.value} 
+              onClick={() => setPeriod(option.value)}
+            >
               {option.label}
             </button>
           ))}
@@ -232,79 +451,229 @@ export default function Finances() {
       </header>
 
       {period === 'custom' && (
-        <div className="custom-range">
-          <label>Desde<input type="date" value={customStart} max={customEnd} onChange={(event) => setCustomStart(event.target.value)} /></label>
-          <span aria-hidden="true">→</span>
-          <label>Hasta<input type="date" value={customEnd} min={customStart} max={today} onChange={(event) => setCustomEnd(event.target.value)} /></label>
-        </div>
+        <motion.div 
+          className="custom-range"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="form-field-group">
+            <label>Desde</label>
+            <input type="date" className="md3-input" value={customStart} max={customEnd} onChange={(event) => setCustomStart(event.target.value)} />
+          </div>
+          <span className="material-symbols-outlined range-arrow" aria-hidden="true">arrow_forward</span>
+          <div className="form-field-group">
+            <label>Hasta</label>
+            <input type="date" className="md3-input" value={customEnd} min={customStart} max={today} onChange={(event) => setCustomEnd(event.target.value)} />
+          </div>
+        </motion.div>
       )}
 
       {loading ? (
-        <div className="finances-state">Cargando estadísticas…</div>
+        <div className="finances-state">
+          <span className="material-symbols-outlined spin-icon">sync</span>
+          Cargando estadísticas…
+        </div>
       ) : error ? (
-        <div className="finances-state error">No pudimos cargar las estadísticas.</div>
+        <div className="finances-state error">
+          <span className="material-symbols-outlined">error</span>
+          No pudimos cargar las estadísticas.
+        </div>
       ) : (
         <>
-          <section className="finance-kpis" aria-label="Indicadores principales">
+          <motion.section 
+            className="finance-kpis" 
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            aria-label="Indicadores principales"
+          >
             {cards.map((card) => (
-              <article className="finance-kpi" key={card.label}>
-                <div className={`kpi-icon ${card.tone}`}><span className="material-symbols-outlined">{card.icon}</span></div>
-                <div><span>{card.label}</span><strong>{card.value}</strong>{card.detail ? <small>{card.detail}</small> : null}</div>
-              </article>
+              <motion.div key={card.label} variants={itemVariants}>
+                <Card variant="outlined" className="finance-kpi" interactive>
+                  <div className={`kpi-icon ${card.tone}`}>
+                    <span className="material-symbols-outlined">{card.icon}</span>
+                  </div>
+                  <div className="kpi-content">
+                    <span className="kpi-label">{card.label}</span>
+                    <strong className="kpi-value">{card.value}</strong>
+                    {card.detail ? <small className="kpi-detail">{card.detail}</small> : null}
+                  </div>
+                </Card>
+              </motion.div>
             ))}
-          </section>
+          </motion.section>
 
-          <p className="profit-note"><span className="material-symbols-outlined">info</span>La ganancia es estimada usando costos equivalentes al 65% de la facturación.</p>
+          <p className="profit-note">
+            <span className="material-symbols-outlined">info</span>
+            La ganancia es estimada usando costos equivalentes al 65% de la facturación.
+          </p>
 
-          <section className="finance-charts">
-            <article className="finance-panel revenue-panel">
-              <div className="panel-heading"><div><span>Rendimiento</span><h3>Facturación por día</h3></div><strong>{formatCurrency(stats.revenue)}</strong></div>
-              {revenueData.length ? <FinanceChart kind="area" data={revenueData} /> : <div className="chart-empty">No hay ventas en este período.</div>}
-            </article>
-            <article className="finance-panel">
-              <div className="panel-heading"><div><span>Distribución</span><h3>Ventas por categoría</h3></div></div>
-              {categoryChart.data.length ? <FinanceChart kind="histogram" data={categoryChart.data} labels={categoryChart.labels} /> : <div className="chart-empty">No hay categorías con ventas.</div>}
-              <div className="category-legend">
-                {stats.categories.map(([category, value], index) => (
-                  <div key={category}><i style={{ backgroundColor: CATEGORY_COLORS[index % CATEGORY_COLORS.length] }} /><span>{category}</span><strong>{stats.revenue ? `${Math.round((value / stats.revenue) * 100)}%` : '0%'}</strong></div>
-                ))}
-              </div>
-            </article>
-          </section>
+          <motion.section 
+            className="finance-charts"
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+          >
+            <motion.div variants={itemVariants} className="flex-1">
+              <Card variant="outlined" noPadding className="finance-panel revenue-panel">
+                <div className="panel-heading">
+                  <div>
+                    <span className="panel-eyebrow">Rendimiento</span>
+                    <h3 className="headline-sm">Facturación por día</h3>
+                  </div>
+                  <strong className="panel-header-value">{formatCurrency(stats.revenue)}</strong>
+                </div>
+                <div className="panel-content">
+                  {revenueData.length ? (
+                    <FinanceChart data={revenueData} theme={theme} />
+                  ) : (
+                    <div className="chart-empty">
+                      <span className="material-symbols-outlined">bar_chart_off</span>
+                      No hay ventas en este período.
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </motion.div>
 
-          <section className="finance-tables">
-            <article className="finance-panel">
-              <div className="panel-heading"><div><span>Catálogo</span><h3>Productos más vendidos</h3></div></div>
-              <div className="finance-table-wrap">
-                <table className="finance-table">
-                  <thead><tr><th>Producto</th><th>Unidades</th><th>Facturación</th></tr></thead>
-                  <tbody>
-                    {stats.topProducts.length ? stats.topProducts.map((product, index) => (
-                      <tr key={product.title}><td><b>{index + 1}</b>{product.title}</td><td>{product.units}</td><td>{formatCurrency(product.revenue)}</td></tr>
-                    )) : <tr><td colSpan={3} className="empty-cell">No hay productos vendidos en este período.</td></tr>}
-                  </tbody>
-                </table>
-              </div>
-            </article>
+            <motion.div variants={itemVariants} className="flex-1">
+              <Card variant="outlined" noPadding className="finance-panel">
+                <div className="panel-heading">
+                  <div>
+                    <span className="panel-eyebrow">Distribución</span>
+                    <h3 className="headline-sm">Ventas por categoría</h3>
+                  </div>
+                </div>
+                <div className="panel-content">
+                  {stats.categories.length ? (
+                    <CategoryDonutChart categories={stats.categories} totalRevenue={stats.revenue} />
+                  ) : (
+                    <div className="chart-empty">
+                      <span className="material-symbols-outlined">pie_chart_outline</span>
+                      No hay categorías con ventas.
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </motion.div>
+          </motion.section>
 
-            <article className="finance-panel">
-              <div className="panel-heading"><div><span>Actividad</span><h3>Últimos pedidos</h3></div></div>
-              <div className="finance-table-wrap">
-                <table className="finance-table orders-table">
-                  <thead><tr><th>Pedido</th><th>Fecha</th><th>Estado</th><th>Total</th></tr></thead>
-                  <tbody>
-                    {stats.latestOrders.length ? stats.latestOrders.map((order) => (
-                      <tr key={order.id}><td><strong>#{order.id}</strong></td><td>{new Date(order.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}</td><td><span className="order-status">{order.status}</span></td><td>{formatCurrency(order.total)}</td></tr>
-                    )) : <tr><td colSpan={4} className="empty-cell">No hay pedidos en este período.</td></tr>}
-                  </tbody>
-                </table>
-              </div>
-            </article>
-          </section>
+          <motion.section 
+            className="finance-tables"
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+          >
+            <motion.div variants={itemVariants} className="flex-1">
+              <Card variant="outlined" noPadding className="finance-panel">
+                <div className="panel-heading">
+                  <div>
+                    <span className="panel-eyebrow">Catálogo</span>
+                    <h3 className="headline-sm">Productos más vendidos</h3>
+                  </div>
+                </div>
+                <div className="finance-table-wrap">
+                  <table className="md3-table finance-table">
+                    <thead>
+                      <tr>
+                        <th>Producto</th>
+                        <th className="text-right">Unidades</th>
+                        <th className="text-right">Facturación</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stats.topProducts.length ? (
+                        stats.topProducts.map((product, index) => (
+                          <tr key={product.title}>
+                            <td className="product-cell">
+                              <span className="product-rank">{index + 1}</span>
+                              <span className="product-title">{product.title}</span>
+                            </td>
+                            <td className="text-right font-medium">{product.units}</td>
+                            <td className="text-right font-semibold text-on-surface">
+                              {formatCurrency(product.revenue)}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={3} className="empty-cell">
+                            No hay productos vendidos en este período.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </motion.div>
 
-          <footer className="tradingview-credit">Gráficos: <a href="https://www.tradingview.com/" target="_blank" rel="noreferrer">TradingView Lightweight Charts™ por TradingView</a></footer>
+            <motion.div variants={itemVariants} className="flex-1">
+              <Card variant="outlined" noPadding className="finance-panel">
+                <div className="panel-heading">
+                  <div>
+                    <span className="panel-eyebrow">Actividad</span>
+                    <h3 className="headline-sm">Últimos pedidos</h3>
+                  </div>
+                </div>
+                <div className="finance-table-wrap">
+                  <table className="md3-table finance-table">
+                    <thead>
+                      <tr>
+                        <th>Pedido</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th className="text-right">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stats.latestOrders.length ? (
+                        stats.latestOrders.map((order) => {
+                          let badgeClass = 'badge-neutral';
+                          if (order.status === 'Recibido') badgeClass = 'badge-neutral';
+                          else if (order.status === 'En proceso') badgeClass = 'badge-warning';
+                          else if (order.status === 'Listo para entregar') badgeClass = 'badge-success';
+
+                          return (
+                            <tr key={order.id}>
+                              <td className="order-cell">
+                                <span className="material-symbols-outlined order-cell-icon">receipt_long</span>
+                                <strong>#{order.id}</strong>
+                              </td>
+                              <td>
+                                {new Date(order.createdAt).toLocaleDateString('es-AR', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                })}
+                              </td>
+                              <td>
+                                <span className={`status-badge ${badgeClass}`}>{order.status}</span>
+                              </td>
+                              <td className="text-right font-semibold text-on-surface">
+                                {formatCurrency(order.total)}
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan={4} className="empty-cell">
+                            No hay pedidos en este período.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </motion.div>
+          </motion.section>
+
+          <footer className="tradingview-credit">
+            Gráficos: <a href="https://www.tradingview.com/" target="_blank" rel="noreferrer">TradingView Lightweight Charts™ por TradingView</a>
+          </footer>
         </>
       )}
-    </div>
+    </motion.div>
   );
 }
