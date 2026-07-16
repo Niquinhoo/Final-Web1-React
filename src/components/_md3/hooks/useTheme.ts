@@ -1,15 +1,42 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
 export type ThemeMode = 'light' | 'dark';
 
 const STORAGE_KEY = 'md3-theme';
+const listeners = new Set<() => void>();
+let mediaListening = false;
 
-function resolveInitialTheme(): ThemeMode {
+function resolveTheme(): ThemeMode {
   if (typeof window === 'undefined') return 'light';
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored === 'light' || stored === 'dark') return stored;
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
+
+let currentTheme = resolveTheme();
+
+function applyTheme(theme: ThemeMode) {
+  currentTheme = theme;
+  document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.style.colorScheme = theme;
+  listeners.forEach((listener) => listener());
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+
+  if (!mediaListening) {
+    mediaListening = true;
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+      const stored = window.localStorage.getItem(STORAGE_KEY);
+      if (stored !== 'light' && stored !== 'dark') applyTheme(event.matches ? 'dark' : 'light');
+    });
+  }
+
+  return () => listeners.delete(listener);
+}
+
+if (typeof document !== 'undefined') applyTheme(currentTheme);
 
 export interface UseThemeResult {
   theme: ThemeMode;
@@ -17,48 +44,19 @@ export interface UseThemeResult {
   setTheme: (mode: ThemeMode) => void;
 }
 
-/**
- * MD3 theme manager.
- *
- * Persists the explicit choice in localStorage and reflects it on
- * <html data-theme="...">. When the user has not chosen, the OS preference is
- * followed via prefers-color-scheme (the fallback in index.css covers paint
- * before this hook runs).
- */
 export function useTheme(): UseThemeResult {
-  const [theme, setThemeState] = useState<ThemeMode>(resolveInitialTheme);
-
-  // Reflect the theme on the document element.
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    document.documentElement.style.colorScheme = theme;
-  }, [theme]);
-
-  // Keep in sync if the OS preference changes AND the user never chose.
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = (e: MediaQueryListEvent) => {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored !== 'light' && stored !== 'dark') {
-        setThemeState(e.matches ? 'dark' : 'light');
-      }
-    };
-    media.addEventListener('change', handler);
-    return () => media.removeEventListener('change', handler);
-  }, []);
+  const theme = useSyncExternalStore(subscribe, () => currentTheme, (): ThemeMode => 'light');
 
   const setTheme = useCallback((mode: ThemeMode) => {
     window.localStorage.setItem(STORAGE_KEY, mode);
-    setThemeState(mode);
+    applyTheme(mode);
   }, []);
 
   const toggleTheme = useCallback(() => {
     const switchTheme = () => {
-      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      const next = currentTheme === 'dark' ? 'light' : 'dark';
       window.localStorage.setItem(STORAGE_KEY, next);
-      document.documentElement.setAttribute('data-theme', next);
-      document.documentElement.style.colorScheme = next;
-      setThemeState(next);
+      applyTheme(next);
     };
 
     if (!document.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

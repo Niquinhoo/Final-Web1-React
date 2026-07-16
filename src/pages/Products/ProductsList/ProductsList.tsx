@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { apiFetch } from '../../../utils/api';
+import { optimizedImage } from '../../../utils/images';
 import { Chip, CircularProgress } from '../../../components/atoms';
 import { useDialog, useSnackbar } from '../../../components/molecules';
 import './ProductsList.css';
@@ -35,8 +36,12 @@ function ProductRowImage({ src, alt }: { src?: string; alt: string }) {
         </div>
       ) : (
         <img
-          src={src}
+          src={optimizedImage(src, 320)}
           alt={alt}
+          width="56"
+          height="56"
+          loading="lazy"
+          decoding="async"
           onLoad={() => setLoaded(true)}
           onError={() => setError(true)}
           style={{ display: loaded ? 'block' : 'none' }}

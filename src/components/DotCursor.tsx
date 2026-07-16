@@ -25,22 +25,21 @@ export default function DotCursor({
   const isMobile = useMemo(() => isTouchDevice(), []);
 
   useEffect(() => {
-    if (isMobile) return;
+    const dot = dotRef.current;
+    if (isMobile || !dot) return;
 
     // Save current body cursor style
     const originalCursor = document.body.style.cursor;
     
     // Add class to hide default cursor globally
     document.body.classList.add('custom-cursor-active');
+    gsap.set(dot, { xPercent: -50, yPercent: -50 });
+    const moveX = gsap.quickTo(dot, 'x', { duration: 0.08, ease: 'power2.out' });
+    const moveY = gsap.quickTo(dot, 'y', { duration: 0.08, ease: 'power2.out' });
 
     const moveCursor = (e: MouseEvent) => {
-      if (!dotRef.current) return;
-      gsap.to(dotRef.current, {
-        x: e.clientX,
-        y: e.clientY,
-        duration: 0.08,
-        ease: 'power2.out',
-      });
+      moveX(e.clientX);
+      moveY(e.clientY);
     };
 
     const handleMouseOver = (e: MouseEvent) => {
@@ -57,7 +56,7 @@ export default function DotCursor({
       }
     };
 
-    window.addEventListener('mousemove', moveCursor);
+    window.addEventListener('mousemove', moveCursor, { passive: true });
     window.addEventListener('mouseover', handleMouseOver);
     window.addEventListener('mouseout', handleMouseOut);
 
@@ -65,6 +64,7 @@ export default function DotCursor({
       window.removeEventListener('mousemove', moveCursor);
       window.removeEventListener('mouseover', handleMouseOver);
       window.removeEventListener('mouseout', handleMouseOut);
+      gsap.killTweensOf(dot);
       document.body.style.cursor = originalCursor;
       document.body.classList.remove('custom-cursor-active');
     };

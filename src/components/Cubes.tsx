@@ -7,6 +7,13 @@ interface CubeDuration {
   leave: number;
 }
 
+interface CubeAnimator {
+  element: HTMLElement;
+  faces: HTMLElement[];
+  row: number;
+  col: number;
+}
+
 interface CubesProps {
   gridSize?: number;
   cubeSize?: number;
@@ -46,42 +53,41 @@ const Cubes = ({
   const userActiveRef = useRef(false);
   const simPosRef = useRef({ x: 0, y: 0 });
   const simTargetRef = useRef({ x: 0, y: 0 });
-  const simRAFRef = useRef<number | null>(null);
+  const simTimerRef = useRef<number | null>(null);
+  const cubesRef = useRef<CubeAnimator[]>([]);
+  const activeCubesRef = useRef<Set<CubeAnimator>>(new Set());
+  const sceneRectRef = useRef<DOMRect | null>(null);
 
   const colGap = typeof cellGap === 'number' ? `${cellGap}px` : cellGap?.col !== undefined ? `${cellGap.col}px` : '5%';
   const rowGap = typeof cellGap === 'number' ? `${cellGap}px` : cellGap?.row !== undefined ? `${cellGap.row}px` : '5%';
 
   const tiltAt = useCallback(
     (rowCenter: number, colCenter: number) => {
-      if (!sceneRef.current) return;
+      const nextActive = new Set<CubeAnimator>();
 
-      // ponytail: the login grid stays small, so a direct scan is simpler than a spatial index.
-      sceneRef.current.querySelectorAll<HTMLElement>('.cube').forEach((cube) => {
-        const row = Number(cube.dataset.row);
-        const col = Number(cube.dataset.col);
-        const distance = Math.hypot(row - rowCenter, col - colCenter);
+      // ponytail: 81 cached cells are cheaper and simpler than a spatial index.
+      cubesRef.current.forEach((cube) => {
+        const distance = Math.hypot(cube.row - rowCenter, cube.col - colCenter);
 
         if (distance <= radius) {
           const angle = (1 - distance / radius) * maxAngle;
-          gsap.to(cube, {
-            duration: duration.enter,
-            ease: easing,
-            overwrite: true,
-            rotateX: -angle,
-            rotateY: angle,
-          });
-        } else {
-          gsap.to(cube, {
-            duration: duration.leave,
-            ease: 'power3.out',
-            overwrite: true,
-            rotateX: 0,
-            rotateY: 0,
-          });
+          cube.element.style.transitionDuration = `${duration.enter}s`;
+          cube.element.style.transform = `rotateX(${-angle}deg) rotateY(${angle}deg)`;
+          cube.element.classList.add('is-tilted');
+          nextActive.add(cube);
         }
       });
+
+      activeCubesRef.current.forEach((cube) => {
+        if (!nextActive.has(cube)) {
+          cube.element.style.transitionDuration = `${duration.leave}s`;
+          cube.element.style.transform = 'rotateX(0deg) rotateY(0deg)';
+          cube.element.classList.remove('is-tilted');
+        }
+      });
+      activeCubesRef.current = nextActive;
     },
-    [duration.enter, duration.leave, easing, maxAngle, radius],
+    [duration.enter, duration.leave, maxAngle, radius],
   );
 
   const markUserActive = useCallback(() => {
@@ -98,7 +104,7 @@ const Cubes = ({
       if (!scene) return;
 
       markUserActive();
-      const rect = scene.getBoundingClientRect();
+      const rect = sceneRectRef.current ?? scene.getBoundingClientRect();
       const cellWidth = rect.width / gridSize;
       const cellHeight = rect.height / gridSize;
       const colCenter = (event.clientX - rect.left) / cellWidth;
@@ -111,16 +117,12 @@ const Cubes = ({
   );
 
   const resetAll = useCallback(() => {
-    if (!sceneRef.current) return;
-
-    sceneRef.current.querySelectorAll<HTMLElement>('.cube').forEach((cube) => {
-      gsap.to(cube, {
-        duration: duration.leave,
-        rotateX: 0,
-        rotateY: 0,
-        ease: 'power3.out',
-      });
+    activeCubesRef.current.forEach((cube) => {
+      cube.element.style.transitionDuration = `${duration.leave}s`;
+      cube.element.style.transform = 'rotateX(0deg) rotateY(0deg)';
+      cube.element.classList.remove('is-tilted');
     });
+    activeCubesRef.current.clear();
   }, [duration.leave]);
 
   const onTouchMove = useCallback(
@@ -131,7 +133,7 @@ const Cubes = ({
       if (!scene || !touch) return;
 
       markUserActive();
-      const rect = scene.getBoundingClientRect();
+      const rect = sceneRectRef.current ?? scene.getBoundingClientRect();
       const cellWidth = rect.width / gridSize;
       const cellHeight = rect.height / gridSize;
       const colCenter = (touch.clientX - rect.left) / cellWidth;
@@ -148,7 +150,7 @@ const Cubes = ({
       const scene = sceneRef.current;
       if (!rippleOnClick || !scene) return;
 
-      const rect = scene.getBoundingClientRect();
+      const rect = sceneRectRef.current ?? scene.getBoundingClientRect();
       const cellWidth = rect.width / gridSize;
       const cellHeight = rect.height / gridSize;
       const colHit = Math.floor((event.clientX - rect.left) / cellWidth);
@@ -156,12 +158,10 @@ const Cubes = ({
       const spreadDelay = 0.15 / rippleSpeed;
       const animationDuration = 0.3 / rippleSpeed;
       const holdTime = 0.6 / rippleSpeed;
-      const rings: Record<number, HTMLElement[]> = {};
+      const rings: Record<number, CubeAnimator[]> = {};
 
-      scene.querySelectorAll<HTMLElement>('.cube').forEach((cube) => {
-        const row = Number(cube.dataset.row);
-        const col = Number(cube.dataset.col);
-        const ring = Math.round(Math.hypot(row - rowHit, col - colHit));
+      cubesRef.current.forEach((cube) => {
+        const ring = Math.round(Math.hypot(cube.row - rowHit, cube.col - colHit));
         (rings[ring] ??= []).push(cube);
       });
 
@@ -170,7 +170,7 @@ const Cubes = ({
         .sort((a, b) => a - b)
         .forEach((ring) => {
           const delay = ring * spreadDelay;
-          const faces = rings[ring].flatMap((cube) => Array.from(cube.querySelectorAll<HTMLElement>('.cube-face')));
+          const faces = rings[ring].flatMap((cube) => cube.faces);
 
           gsap.to(faces, {
             backgroundColor: rippleColor,
@@ -190,17 +190,58 @@ const Cubes = ({
   );
 
   useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+
+    const updateRect = () => {
+      sceneRectRef.current = scene.getBoundingClientRect();
+    };
+    cubesRef.current = Array.from(scene.querySelectorAll<HTMLElement>('.cube')).map((element) => ({
+      element,
+      faces: Array.from(element.querySelectorAll<HTMLElement>('.cube-face')),
+      row: Number(element.dataset.row),
+      col: Number(element.dataset.col),
+    })).map((cube) => {
+      cube.element.style.transitionProperty = 'transform';
+      cube.element.style.transitionTimingFunction = easing === 'power3.out' ? 'cubic-bezier(0.16, 1, 0.3, 1)' : easing;
+      return cube;
+    });
+    updateRect();
+
+    const resizeObserver = new ResizeObserver(updateRect);
+    resizeObserver.observe(scene);
+    scene.addEventListener('pointerenter', updateRect, { passive: true });
+
+    return () => {
+      resizeObserver.disconnect();
+      scene.removeEventListener('pointerenter', updateRect);
+      gsap.killTweensOf(cubesRef.current.flatMap((cube) => cube.faces));
+      cubesRef.current = [];
+      activeCubesRef.current.clear();
+    };
+  }, [duration.enter, easing]);
+
+  useEffect(() => {
     if (!autoAnimate || !sceneRef.current) return;
+    const scene = sceneRef.current;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) return;
 
     simPosRef.current = { x: Math.random() * gridSize, y: Math.random() * gridSize };
     simTargetRef.current = { x: Math.random() * gridSize, y: Math.random() * gridSize };
+    let visible = true;
 
     const loop = () => {
+      if (document.hidden || !visible) {
+        simTimerRef.current = null;
+        return;
+      }
+
       if (!userActiveRef.current) {
         const position = simPosRef.current;
         const target = simTargetRef.current;
-        position.x += (target.x - position.x) * 0.02;
-        position.y += (target.y - position.y) * 0.02;
+        position.x += (target.x - position.x) * 0.06;
+        position.y += (target.y - position.y) * 0.06;
         tiltAt(position.y, position.x);
 
         if (Math.hypot(position.x - target.x, position.y - target.y) < 0.1) {
@@ -208,12 +249,35 @@ const Cubes = ({
         }
       }
 
-      simRAFRef.current = requestAnimationFrame(loop);
+      simTimerRef.current = window.setTimeout(loop, 50);
     };
 
-    simRAFRef.current = requestAnimationFrame(loop);
+    const start = () => {
+      if (simTimerRef.current === null && !document.hidden && visible) {
+        simTimerRef.current = window.setTimeout(loop, 0);
+      }
+    };
+    const stop = () => {
+      if (simTimerRef.current !== null) window.clearTimeout(simTimerRef.current);
+      simTimerRef.current = null;
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) start();
+      else stop();
+    });
+    const handleVisibility = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+
+    observer.observe(scene);
+    document.addEventListener('visibilitychange', handleVisibility);
+    start();
     return () => {
-      if (simRAFRef.current !== null) cancelAnimationFrame(simRAFRef.current);
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibility);
+      stop();
     };
   }, [autoAnimate, gridSize, tiltAt]);
 
@@ -221,7 +285,7 @@ const Cubes = ({
     const scene = sceneRef.current;
     if (!scene) return;
 
-    scene.addEventListener('pointermove', onPointerMove);
+    scene.addEventListener('pointermove', onPointerMove, { passive: true });
     scene.addEventListener('pointerleave', resetAll);
     scene.addEventListener('click', onClick);
     scene.addEventListener('touchmove', onTouchMove, { passive: false });
@@ -259,11 +323,8 @@ const Cubes = ({
           cells.map((__, col) => (
             <div key={`${row}-${col}`} className="cube" data-row={row} data-col={col}>
               <div className="cube-face cube-face--top" />
-              <div className="cube-face cube-face--bottom" />
-              <div className="cube-face cube-face--left" />
               <div className="cube-face cube-face--right" />
               <div className="cube-face cube-face--front" />
-              <div className="cube-face cube-face--back" />
             </div>
           )),
         )}

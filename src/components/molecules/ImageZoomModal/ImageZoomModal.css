@@ -48,7 +48,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.25s, border-color 0.25s, transform 0.25s;
   pointer-events: auto;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
@@ -121,7 +121,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s, color 0.2s, transform 0.2s;
 }
 
 .control-btn:hover:not(:disabled) {

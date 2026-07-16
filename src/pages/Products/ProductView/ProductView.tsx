@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../../utils/api';
+import { optimizedImage } from '../../../utils/images';
 import { Button, IconButton, Card } from '../../../components/atoms';
 import { useDialog, useSnackbar } from '../../../components/molecules';
 import './ProductView.css';
@@ -228,7 +229,7 @@ export default function ProductView() {
           <h3 className="headline-sm">Vista Previa</h3>
           <div className="preview-image-box">
             {src ? (
-              <img src={getProductImageUrl(src)} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
+              <img src={optimizedImage(getProductImageUrl(src))} alt={title} width="1024" height="768" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
             ) : (
               <>
                 <span className="material-symbols-outlined placeholder-image-icon">image</span>
