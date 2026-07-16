@@ -151,7 +151,7 @@
   color: var(--md-sys-color-on-primary-container) !important;
   border: 1px solid var(--md-sys-color-primary) !important;
   margin-top: var(--md-sys-spacing-2);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s !important;
 }
 
 .back-to-store-btn:hover {

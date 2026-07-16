@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { createContext, lazy, Suspense, useContext, useState, useEffect, useRef } from 'react';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import {
   BrowserRouter,
@@ -57,23 +57,13 @@ import {
 } from './utils/store';
 import type { CartDetail, Order, OrderDiscount, Product, RegisterErrors, User, Category } from './utils/store';
 import { apiFetch } from './utils/api';
+import { optimizedImage } from './utils/images';
 import { useTheme } from './components/_md3/hooks';
 
 // Admin dashboard component imports
 import { DialogProvider } from './components/molecules/Dialog/DialogProvider';
 import { SnackbarProvider } from './components/molecules/Snackbar/Snackbar';
 import { CircularProgress } from './components/atoms';
-import Home from './pages/Home/Home';
-import ProductsList from './pages/Products/ProductsList/ProductsList';
-import ProductView from './pages/Products/ProductView/ProductView';
-import CategoriesList from './pages/Categories/CategoriesList/CategoriesList';
-import CategoryView from './pages/Categories/CategoryView/CategoryView';
-import OrdersKanban from './pages/Orders/OrdersKanban/OrdersKanban';
-import Finances from './pages/Finances/Finances';
-import UsersList from './pages/Users/UsersList/UsersList';
-import UserView from './pages/Users/UserView/UserView';
-import Profile from './pages/Profile/Profile';
-import NotFound from './pages/NotFound/NotFound';
 import Sidebar from './components/organisms/Sidebar/Sidebar';
 import Header from './components/organisms/Header/Header';
 import Cubes from './components/Cubes';
@@ -82,8 +72,20 @@ import DotCursor from './components/DotCursor';
 import ClickSpark from './components/ClickSpark';
 import BorderGlow from './components/BorderGlow';
 import StaggeredMenu from './components/StaggeredMenu';
-import { ImageZoomModal } from './components/molecules';
 import './App.css';
+
+const Home = lazy(() => import('./pages/Home/Home'));
+const ProductsList = lazy(() => import('./pages/Products/ProductsList/ProductsList'));
+const ProductView = lazy(() => import('./pages/Products/ProductView/ProductView'));
+const CategoriesList = lazy(() => import('./pages/Categories/CategoriesList/CategoriesList'));
+const CategoryView = lazy(() => import('./pages/Categories/CategoryView/CategoryView'));
+const OrdersKanban = lazy(() => import('./pages/Orders/OrdersKanban/OrdersKanban'));
+const Finances = lazy(() => import('./pages/Finances/Finances'));
+const UsersList = lazy(() => import('./pages/Users/UsersList/UsersList'));
+const UserView = lazy(() => import('./pages/Users/UserView/UserView'));
+const Profile = lazy(() => import('./pages/Profile/Profile'));
+const NotFound = lazy(() => import('./pages/NotFound/NotFound'));
+const ImageZoomModal = lazy(() => import('./components/molecules/ImageZoomModal/ImageZoomModal'));
 
 interface AppState {
   cart: CartDetail;
@@ -364,7 +366,7 @@ function Layout() {
                     className="search-result-item"
                     onClick={closeSearch}
                   >
-                    <img src={product.src} alt={product.title} />
+                    <img src={optimizedImage(product.src, 320)} alt={product.title} width="64" height="64" decoding="async" />
                     <span>{highlightMatch(product.title, trimmedQuery)}</span>
                     <small>{formatPrice(product.price)}</small>
                   </Link>
@@ -427,7 +429,7 @@ function Layout() {
                       <div className="cart-preview-items">
                         {cart.items.map((item) => (
                           <div key={item.productId} className="cart-preview-item">
-                            <img src={item.src} alt={item.title} />
+                            <img src={optimizedImage(item.src, 320)} alt={item.title} width="56" height="56" decoding="async" />
                             <div className="cart-preview-item-info">
                               <span className="cart-preview-item-title">{item.title}</span>
                               <span className="cart-preview-item-meta">
@@ -521,7 +523,7 @@ function Layout() {
                             setIsMobileNavOpen(false);
                           }}
                         >
-                          <img src={product.src} alt={product.title} />
+                          <img src={optimizedImage(product.src, 320)} alt={product.title} width="64" height="64" decoding="async" />
                           <span>{highlightMatch(product.title, trimmedQuery)}</span>
                           <small>{formatPrice(product.price)}</small>
                         </Link>
@@ -650,7 +652,11 @@ function HomePage() {
 
   return (
     <PageWrapper>
-      <section className="hero-section" style={{ backgroundImage: `linear-gradient(90deg, rgba(16, 24, 40, .84), rgba(16, 24, 40, .18)), url(${mainBanner.image})` }}>
+      <section className="hero-section">
+        <picture className="banner-media" aria-hidden="true">
+          <source media="(max-width: 700px)" srcSet={optimizedImage(mainBanner.image, 960)} />
+          <img src={optimizedImage(mainBanner.image, 1440)} alt="" width="1440" height="1440" fetchPriority="high" />
+        </picture>
         <div className="hero-copy">
           <span className="eyebrow">Delivery simple, comida real</span>
           <h1>{mainBanner.title}</h1>
@@ -704,7 +710,11 @@ function BannerGrid() {
   return (
     <section className="banner-grid" aria-label="Promociones">
       {homeBanners.map((banner) => (
-        <article key={banner.title} className="promo-banner" style={{ backgroundImage: `linear-gradient(90deg, rgba(0,0,0,.66), rgba(0,0,0,.08)), url(${banner.image})` }}>
+        <article key={banner.title} className="promo-banner">
+          <picture className="banner-media" aria-hidden="true">
+            <source media="(max-width: 700px)" srcSet={optimizedImage(banner.image, 640)} />
+            <img src={optimizedImage(banner.image, 960)} alt="" width="960" height="960" loading="lazy" decoding="async" />
+          </picture>
           <h2>{banner.title}</h2>
           <p>{banner.description}</p>
           <Link to="/products">{banner.buttonText}</Link>
@@ -745,7 +755,7 @@ function ProductCard({ product }: { product: Product }) {
   const cardContent = (
     <>
       <Link to={`/products/${product.id}`} className="product-image-link">
-        <img src={product.src} alt={product.title} loading="lazy" />
+        <img src={optimizedImage(product.src, 640)} alt={product.title} width="640" height="480" loading="lazy" decoding="async" />
         {product.isTopSeller && <span className="badge">Top ventas</span>}
       </Link>
       <div className="product-card-body">
@@ -862,6 +872,7 @@ function ProductDetailPage() {
   const [related, setRelated] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const [hasOpenedZoom, setHasOpenedZoom] = useState(false);
 
   useEffect(() => {
     async function loadProductDetail() {
@@ -910,8 +921,11 @@ function ProductDetailPage() {
   return (
     <PageWrapper>
       <section className="product-detail">
-        <div className="product-gallery clickable-gallery" onClick={() => setIsZoomOpen(true)}>
-          <img src={product.src} alt={product.title} />
+        <div className="product-gallery clickable-gallery" onClick={() => {
+          setHasOpenedZoom(true);
+          setIsZoomOpen(true);
+        }}>
+          <img src={optimizedImage(product.src)} alt={product.title} width="1024" height="768" decoding="async" />
           <div className="gallery-hover-overlay">
             <span className="material-symbols-outlined">zoom_in</span>
             <span>Click para ampliar</span>
@@ -938,12 +952,16 @@ function ProductDetailPage() {
 
       {related.length > 0 && <ProductSection title="Productos relacionados" products={related} />}
 
-      <ImageZoomModal
-        isOpen={isZoomOpen}
-        onClose={() => setIsZoomOpen(false)}
-        src={product.src}
-        alt={product.title}
-      />
+      {hasOpenedZoom && (
+        <Suspense fallback={null}>
+          <ImageZoomModal
+            isOpen={isZoomOpen}
+            onClose={() => setIsZoomOpen(false)}
+            src={optimizedImage(product.src)}
+            alt={product.title}
+          />
+        </Suspense>
+      )}
     </PageWrapper>
   );
 }
@@ -1159,7 +1177,7 @@ function CartPage() {
                     exit={{ opacity: 0, x: 10 }}
                     className="cart-item"
                   >
-                    <img src={item.src} alt={item.title} />
+                    <img src={optimizedImage(item.src, 320)} alt={item.title} width="96" height="72" loading="lazy" decoding="async" />
                     <div className="cart-item-info">
                       <Link to={`/products/${item.productId}`} className="cart-item-title">{item.title}</Link>
                       <p className="cart-item-category">{item.category}</p>
@@ -1694,7 +1712,7 @@ function OrderDetailModal({ order, onClose }: { order: Order; onClose: () => voi
             const title = product?.title || `Producto #${item.productId}`;
             return (
               <div key={item.productId} className="order-modal-item">
-                <img src={product?.src || '/assets/productos/proximamente.png'} alt={title} />
+                <img src={optimizedImage(product?.src || '/assets/productos/proximamente.png', 320)} alt={title} width="72" height="72" loading="lazy" decoding="async" />
                 <div>
                   <strong>{title}</strong>
                   <span>{item.quantity} x {formatPrice(item.price)}</span>
@@ -1829,23 +1847,25 @@ function AdminLayout() {
       <div className="main-area">
         <Header toggleSidebar={toggleSidebar} />
         <main className="content">
-          <Routes>
-            <Route path="/" element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<Home />} />
-            <Route path="products" element={<ProductsList />} />
-            <Route path="products/new" element={<ProductView />} />
-            <Route path="products/:id" element={<ProductView />} />
-            <Route path="categories" element={<CategoriesList />} />
-            <Route path="categories/new" element={<CategoryView />} />
-            <Route path="categories/:id" element={<CategoryView />} />
-            <Route path="orders" element={<OrdersKanban />} />
-            <Route path="finances" element={<Finances />} />
-            <Route path="users" element={<UsersList />} />
-            <Route path="users/new" element={<UserView />} />
-            <Route path="users/:id" element={<UserView />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={<div className="store-loading-spinner"><CircularProgress size={36} /></div>}>
+            <Routes>
+              <Route path="/" element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<Home />} />
+              <Route path="products" element={<ProductsList />} />
+              <Route path="products/new" element={<ProductView />} />
+              <Route path="products/:id" element={<ProductView />} />
+              <Route path="categories" element={<CategoriesList />} />
+              <Route path="categories/new" element={<CategoryView />} />
+              <Route path="categories/:id" element={<CategoryView />} />
+              <Route path="orders" element={<OrdersKanban />} />
+              <Route path="finances" element={<Finances />} />
+              <Route path="users" element={<UsersList />} />
+              <Route path="users/new" element={<UserView />} />
+              <Route path="users/:id" element={<UserView />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
     </div>

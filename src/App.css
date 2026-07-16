@@ -363,7 +363,7 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   gap: 6px;
   text-decoration: none;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.25s, transform 0.25s, box-shadow 0.25s;
   border: 1px solid transparent;
 }
 
@@ -387,6 +387,25 @@ h1, h2, h3, h4, h5, h6 {
   background-position: center;
   margin-bottom: 32px;
   position: relative;
+  overflow: hidden;
+}
+
+.banner-media,
+.banner-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.banner-media img { object-fit: cover; }
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(90deg, rgba(16, 24, 40, .84), rgba(16, 24, 40, .18));
 }
 
 .hero-copy {
@@ -514,6 +533,8 @@ h1, h2, h3, h4, h5, h6 {
   gap: 20px;
   padding: 0 clamp(16px, 4vw, 56px);
   margin: 32px 0;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
 }
 
 .promo-banner {
@@ -578,6 +599,8 @@ h1, h2, h3, h4, h5, h6 {
 
 /* --- PRODUCT SECTION & GRID --- */
 .page-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 620px;
   padding: 24px clamp(16px, 4vw, 56px);
 }
 
@@ -789,7 +812,7 @@ h1, h2, h3, h4, h5, h6 {
   gap: 8px;
   color: #ffffff;
   opacity: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
 }
 
@@ -1523,7 +1546,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .no-layout .transition-all,
 .no-layout .transition-colors {
-  transition: all 0.2s ease;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
 .no-layout .transform {
@@ -1919,6 +1942,8 @@ h1, h2, h3, h4, h5, h6 {
 
 /* --- FOOTER --- */
 .store-footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 180px;
   background: var(--store-card-bg);
   border-top: 1px solid var(--store-border);
   padding: 32px clamp(16px, 4vw, 56px);

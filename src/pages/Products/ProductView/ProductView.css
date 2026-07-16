@@ -193,7 +193,7 @@
   border: 1.5px dashed var(--md-sys-color-primary) !important;
   background: linear-gradient(135deg, var(--md-sys-color-surface-container-low), var(--md-sys-color-surface-container-lowest)) !important;
   box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: border-color 0.3s, transform 0.3s !important;
 }
 
 .preview-image-box:hover {
@@ -232,7 +232,7 @@
   border-radius: var(--md-sys-shape-corner-md) !important;
   padding: 16px 20px !important;
   font-size: 15px !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: border-color 0.3s, box-shadow 0.3s !important;
   border-color: var(--md-sys-color-outline-variant) !important;
 }
 
@@ -269,7 +269,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease-in-out;
+  transition: background-color 0.2s, transform 0.2s;
 }
 
 .product-edit-card .md3-stock-adjuster .md3-icon-btn:hover {
@@ -294,7 +294,7 @@
   height: 52px !important;
   border-radius: var(--md-sys-shape-corner-md) !important;
   font-weight: 600;
-  transition: all 0.3s ease !important;
+  transition: background-color 0.3s, color 0.3s, box-shadow 0.3s !important;
   box-shadow: var(--md-sys-elevation-0);
 }
 
@@ -316,7 +316,7 @@
 .centered-btn-actions .md3-btn {
   padding: 0 var(--md-sys-spacing-8) !important;
   height: 48px !important;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: transform 0.25s, box-shadow 0.25s !important;
 }
 
 .centered-btn-actions .md3-btn:hover {

@@ -71,7 +71,10 @@
   border: none;
   font-family: var(--sans);
   letter-spacing: 0.04em; /* Extra letter spacing for premium look */
-  transition: all var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+  transition: background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+              color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+              box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+              transform var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
 }
 
 .md3-btn:focus-visible {

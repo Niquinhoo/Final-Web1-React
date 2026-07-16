@@ -11,6 +11,20 @@
   cursor: pointer;
   transform-origin: 50% 50%;
   -webkit-transform-origin: 50% 50%;
+  animation: circular-text-spin var(--spin-duration) linear infinite;
+  transition: scale 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes circular-text-spin {
+  to { rotate: 360deg; }
+}
+
+.circular-text--slowDown:hover { animation-duration: var(--spin-slow); }
+.circular-text--speedUp:hover { animation-duration: var(--spin-fast); }
+.circular-text--pause:hover { animation-play-state: paused; }
+.circular-text--goBonkers:hover {
+  animation-duration: var(--spin-bonkers);
+  scale: 0.8;
 }
 
 .circular-text span {
@@ -21,7 +35,10 @@
   top: 0;
   bottom: 0;
   font-size: 24px;
-  transition: all 0.5s cubic-bezier(0, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .circular-text { animation: none; }
 }
 
 /* Brand logo icon variant */

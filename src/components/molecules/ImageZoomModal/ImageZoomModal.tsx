@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
 import { X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import './ImageZoomModal.css';
 
@@ -14,19 +14,30 @@ export default function ImageZoomModal({ isOpen, onClose, src, alt }: ImageZoomM
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+  const positionRef = useRef({ x: 0, y: 0 });
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const boundsRef = useRef({ x: 0, y: 0 });
+
+  const resetPosition = useCallback(() => {
+    positionRef.current = { x: 0, y: 0 };
+    setPosition(positionRef.current);
+    x.set(0);
+    y.set(0);
+  }, [x, y]);
 
   // Reset zoom and positions when opening or closing
   useEffect(() => {
     if (isOpen) {
       setScale(1);
-      setPosition({ x: 0, y: 0 });
+      resetPosition();
       setIsDragging(false);
     }
-  }, [isOpen]);
+  }, [isOpen, resetPosition]);
 
   // Handle keyboard events (Escape key to close)
   useEffect(() => {
@@ -53,16 +64,14 @@ export default function ImageZoomModal({ isOpen, onClose, src, alt }: ImageZoomM
   const handleZoomOut = () => {
     setScale((prev) => {
       const next = Math.max(prev - 0.5, 1);
-      if (next === 1) {
-        setPosition({ x: 0, y: 0 });
-      }
+      if (next === 1) resetPosition();
       return next;
     });
   };
 
   const handleReset = () => {
     setScale(1);
-    setPosition({ x: 0, y: 0 });
+    resetPosition();
   };
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -75,9 +84,7 @@ export default function ImageZoomModal({ isOpen, onClose, src, alt }: ImageZoomM
       // Zoom Out
       setScale((prev) => {
         const next = Math.max(prev - zoomFactor, 1);
-        if (next === 1) {
-          setPosition({ x: 0, y: 0 });
-        }
+        if (next === 1) resetPosition();
         return next;
       });
     }
@@ -86,7 +93,7 @@ export default function ImageZoomModal({ isOpen, onClose, src, alt }: ImageZoomM
   const handleDoubleClick = () => {
     if (scale > 1) {
       setScale(1);
-      setPosition({ x: 0, y: 0 });
+      resetPosition();
     } else {
       setScale(2.5);
     }
@@ -94,36 +101,33 @@ export default function ImageZoomModal({ isOpen, onClose, src, alt }: ImageZoomM
 
   // Pointer dragging events for pan
   const handlePointerDown = (e: React.PointerEvent) => {
-    if (scale > 1) {
-      setIsDragging(true);
-      setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
-      e.currentTarget.setPointerCapture(e.pointerId);
-    }
+    if (scale <= 1 || !containerRef.current || !imgRef.current) return;
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const imgRect = imgRef.current.getBoundingClientRect();
+    boundsRef.current = {
+      x: Math.max(0, (imgRect.width - containerRect.width) / 2),
+      y: Math.max(0, (imgRect.height - containerRect.height) / 2),
+    };
+    dragStartRef.current = { x: e.clientX - x.get(), y: e.clientY - y.get() };
+    setIsDragging(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (isDragging && scale > 1 && containerRef.current && imgRef.current) {
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const imgRect = imgRef.current.getBoundingClientRect();
-
-      // Calculated boundary limits based on scaled image overflow
-      const maxX = Math.max(0, (imgRect.width - containerRect.width) / 2);
-      const maxY = Math.max(0, (imgRect.height - containerRect.height) / 2);
-
-      let newX = e.clientX - dragStart.x;
-      let newY = e.clientY - dragStart.y;
-
-      // Constrain position so user cannot drag image out of viewport limits
-      newX = Math.max(-maxX, Math.min(maxX, newX));
-      newY = Math.max(-maxY, Math.min(maxY, newY));
-
-      setPosition({ x: newX, y: newY });
-    }
+    if (!isDragging || scale <= 1) return;
+    const next = {
+      x: Math.max(-boundsRef.current.x, Math.min(boundsRef.current.x, e.clientX - dragStartRef.current.x)),
+      y: Math.max(-boundsRef.current.y, Math.min(boundsRef.current.y, e.clientY - dragStartRef.current.y)),
+    };
+    positionRef.current = next;
+    x.set(next.x);
+    y.set(next.y);
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
     if (isDragging) {
       setIsDragging(false);
+      setPosition(positionRef.current);
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
   };
@@ -164,18 +168,14 @@ export default function ImageZoomModal({ isOpen, onClose, src, alt }: ImageZoomM
             <motion.div
               className="zoom-image-wrapper"
               style={{
+                x,
+                y,
                 cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
               }}
               animate={{
                 scale: scale,
-                x: position.x,
-                y: position.y,
               }}
-              transition={
-                isDragging
-                  ? { type: 'tween', duration: 0 }
-                  : { type: 'spring', stiffness: 300, damping: 30 }
-              }
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
@@ -185,6 +185,7 @@ export default function ImageZoomModal({ isOpen, onClose, src, alt }: ImageZoomM
                 ref={imgRef}
                 src={src}
                 alt={alt}
+                decoding="async"
                 draggable="false"
                 onDoubleClick={handleDoubleClick}
                 className="zoom-image-content"

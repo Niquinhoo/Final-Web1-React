@@ -257,7 +257,7 @@
 .stat-card.low-stock-alert {
   animation: pulsating-alert 1.2s infinite ease-in-out;
   border-left: 4px solid var(--md-sys-color-error);
-  transition: all 0.3s ease;
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s, box-shadow 0.3s;
 }
 
 .stat-card.low-stock-alert .stat-value,
